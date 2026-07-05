@@ -41,6 +41,14 @@ function getPaymentStatus(task: AnyTask) {
 
 function needsCommitteeAction(task: AnyTask) {
   const pay = getPaymentStatus(task);
+
+  async function refresh(viewOverride?: "active" | "voided" | "all") {
+    const view = viewOverride ?? taskView;
+    const res = await fetch(`/api/tasks?view=${view}`);
+    const data = await res.json();
+    setTasks(data.tasks);
+  }
+
   async function voidTask(taskId: string) {
     const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
     if (!reason || !reason.trim()) return;
