@@ -20,6 +20,15 @@ type Task = {
   dueDate?: string | null;
   status?: string | null;
   location?: string | null;
+  frequency?: string | null;
+  category?: string | null;
+  priority?: string | null;
+  contractorCompany?: string | null;
+  evidenceFolderUrl?: string | null;
+  dayFolderUrl?: string | null;
+  notes?: string | null;
+  scopeOfWork?: string | null;
+  requiredActions?: string | null;
 };
 
 function formatDate(value?: string | null) {
@@ -36,6 +45,19 @@ function taskCode(task: Task) {
   return task.code || task.taskCode || "Task";
 }
 
+function taskTitle(task: Task) {
+  return task.title || task.description || "Assigned contractor task";
+}
+
+function taskRequirementLines(task: Task) {
+  const source = task.requiredActions || task.scopeOfWork || task.notes || task.description || "";
+  return String(source)
+    .split(/\n|\r|;|•|-/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 12);
+}
+
 export default function ContractorMobileAccess() {
   const [contractors, setContractors] = useState<Contractor[]>([]);
   const [selected, setSelected] = useState<Contractor | null>(null);
@@ -43,6 +65,7 @@ export default function ContractorMobileAccess() {
   const [pinCode, setPinCode] = useState("");
   const [accessToken, setAccessToken] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -126,6 +149,7 @@ export default function ContractorMobileAccess() {
   function logout() {
     setAccessToken("");
     setTasks([]);
+    setSelectedTask(null);
     setCompanyPhone("");
     setPinCode("");
     window.localStorage.removeItem("contractor.accessToken");
@@ -151,6 +175,65 @@ export default function ContractorMobileAccess() {
           <span>assigned task(s)</span>
         </section>
 
+        {selectedTask ? (
+          <section className="contractor-job-detail">
+            <button className="secondary" onClick={() => setSelectedTask(null)}>← Back to assigned tasks</button>
+
+            <div className="contractor-job-heading">
+              <span>{taskCode(selectedTask)}</span>
+              <h2>{taskTitle(selectedTask)}</h2>
+              <p>{formatDate(selectedTask.dueDate)}</p>
+            </div>
+
+            <div className="contractor-job-meta">
+              <div>
+                <span>Status</span>
+                <strong>{selectedTask.status ?? "Pending"}</strong>
+              </div>
+              <div>
+                <span>Priority</span>
+                <strong>{selectedTask.priority ?? "Normal"}</strong>
+              </div>
+              <div>
+                <span>Location</span>
+                <strong>{selectedTask.location ?? "Not specified"}</strong>
+              </div>
+            </div>
+
+            <div className="contractor-job-section">
+              <h3>Required work</h3>
+              {taskRequirementLines(selectedTask).length === 0 ? (
+                <p>No task instructions have been added yet.</p>
+              ) : (
+                <ul>
+                  {taskRequirementLines(selectedTask).map((line, index) => (
+                    <li key={`${line}-${index}`}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <div className="contractor-job-section">
+              <h3>Evidence required</h3>
+              <p>Upload photos, notes, invoices or completion evidence against this job before marking it complete.</p>
+              {selectedTask.dayFolderUrl || selectedTask.evidenceFolderUrl ? (
+                <a className="contractor-link-button" href={selectedTask.dayFolderUrl || selectedTask.evidenceFolderUrl || "#"} target="_blank" rel="noreferrer">
+                  Open evidence folder
+                </a>
+              ) : (
+                <p className="contractor-muted">No evidence folder linked yet.</p>
+              )}
+            </div>
+
+            <div className="contractor-job-actions">
+              <button>Upload Evidence</button>
+              <button className="secondary">Add Note</button>
+              <button className="secondary">Mark Complete</button>
+            </div>
+          </section>
+        ) : null}
+
+        {!selectedTask ? (
         <section className="contractor-task-list">
           {tasks.length === 0 ? (
             <div className="contractor-empty">No assigned tasks found.</div>
@@ -159,20 +242,21 @@ export default function ContractorMobileAccess() {
               <div key={date} className="contractor-day">
                 <h2>{date === "No due date" ? date : formatDate(date)}</h2>
                 {items.map((task) => (
-                  <article key={task.id} className="contractor-task-card">
+                  <article key={task.id} className="contractor-task-card" onClick={() => setSelectedTask(task)} role="button" tabIndex={0}>
                     <div className="contractor-task-top">
                       <strong>{taskCode(task)}</strong>
                       <span>{task.status ?? "Pending"}</span>
                     </div>
-                    <h3>{task.title || task.description || "Assigned contractor task"}</h3>
+                    <h3>{taskTitle(task)}</h3>
                     {task.location ? <p>{task.location}</p> : null}
-                    <button className="secondary">Open Task</button>
+                    <button className="secondary" onClick={(event) => { event.stopPropagation(); setSelectedTask(task); }}>Open Job</button>
                   </article>
                 ))}
               </div>
             ))
           )}
         </section>
+        ) : null}
       </main>
     );
   }

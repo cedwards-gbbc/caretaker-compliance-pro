@@ -1936,3 +1936,232 @@ h3 {
   }
 }
 
+
+/* Dakabin Crossing palette and typography */
+:root {
+  --primary: #2F3437;
+  --accent: #5D7F45;
+  --background: #F4F1EA;
+  --border: #C9C7C1;
+  --warning: #B46A4C;
+  --text: #1F2324;
+  --card: #FFFFFF;
+  --muted: #6F7475;
+  --success: #5D7F45;
+  --danger: #B46A4C;
+  --navy: #2F3437;
+  --blue: #5D7F45;
+}
+
+html,
+body {
+  background: #F4F1EA !important;
+  color: #1F2324 !important;
+  font-family: "Arial Black", "Arial Narrow", Impact, Arial, Helvetica, sans-serif !important;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit !important;
+}
+
+button,
+.primary-button,
+.calendar-add-button {
+  background: #5D7F45 !important;
+  border-color: #5D7F45 !important;
+  color: #FFFFFF !important;
+}
+
+button.secondary,
+.secondary {
+  background: #FFFFFF !important;
+  border-color: #C9C7C1 !important;
+  color: #2F3437 !important;
+}
+
+.card,
+.panel,
+.calendar-card,
+.calendar-panel,
+.calendar-shell,
+.mobile-top-tabs,
+.contractor-hero,
+.contractor-header,
+.contractor-login-card,
+.contractor-summary,
+.contractor-day,
+.contractor-empty,
+.contractor-company-card,
+.contractor-task-card,
+.contractor-job-detail {
+  border-color: #C9C7C1 !important;
+  background: #FFFFFF !important;
+  color: #1F2324 !important;
+}
+
+.app-header,
+.hero,
+.workspace-header,
+.mobile-top-tabs {
+  background: #2F3437 !important;
+  color: #FFFFFF !important;
+}
+
+.mobile-top-tabs button.active,
+.mobile-top-tabs a.active {
+  background: #5D7F45 !important;
+  color: #FFFFFF !important;
+}
+
+.calendar-grid,
+.month-grid {
+  background: #2F3437 !important;
+}
+
+.calendar-day,
+.month-day {
+  border-color: rgba(201, 199, 193, .25) !important;
+}
+
+.calendar-task,
+.calendar-chip,
+.task-chip {
+  background: #5D7F45 !important;
+  color: #FFFFFF !important;
+}
+
+.calendar-task.warning,
+.calendar-chip.warning,
+.task-chip.warning,
+.status-warning {
+  background: #B46A4C !important;
+  color: #FFFFFF !important;
+}
+
+.status,
+.badge,
+.pill {
+  border-color: #C9C7C1 !important;
+}
+
+/* Contractor job detail */
+.contractor-job-detail {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #C9C7C1;
+  border-radius: 0;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.contractor-job-heading span {
+  display: block;
+  color: #5D7F45;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.contractor-job-heading h2 {
+  margin: 4px 0;
+  font-size: 24px;
+  line-height: 1.1;
+  color: #1F2324;
+}
+
+.contractor-job-heading p {
+  margin: 0;
+  color: #6F7475;
+}
+
+.contractor-job-meta {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.contractor-job-meta div {
+  border: 1px solid #C9C7C1;
+  padding: 10px;
+  background: #F4F1EA;
+}
+
+.contractor-job-meta span {
+  display: block;
+  color: #6F7475;
+  font-size: 11px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.contractor-job-section {
+  border-top: 1px solid #C9C7C1;
+  padding-top: 12px;
+}
+
+.contractor-job-section h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #2F3437;
+}
+
+.contractor-job-section p,
+.contractor-job-section li {
+  color: #1F2324;
+  line-height: 1.4;
+}
+
+.contractor-job-section ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.contractor-job-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.contractor-link-button {
+  display: inline-grid;
+  place-items: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  background: #5D7F45;
+  color: #FFFFFF;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.contractor-muted {
+  color: #6F7475 !important;
+}
+
+@media (max-width: 780px) {
+  body {
+    background: #F4F1EA !important;
+  }
+
+  .contractor-shell {
+    background: #F4F1EA !important;
+    color: #1F2324 !important;
+  }
+
+  .contractor-task-card {
+    cursor: pointer;
+  }
+
+  .contractor-job-detail,
+  .contractor-login-card,
+  .contractor-company-card,
+  .contractor-header,
+  .contractor-summary,
+  .contractor-day {
+    border-radius: 0 !important;
+  }
+}
+
