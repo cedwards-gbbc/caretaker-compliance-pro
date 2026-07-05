@@ -373,6 +373,13 @@ export default function TaskWorkspace({
         </div>
       </header>
 
+      <nav className="mobile-top-tabs" aria-label="Mobile navigation">
+        <button className={activeTab === "calendar" ? "active" : ""} onClick={() => setActiveTab("calendar")}>Calendar</button>
+        <button className={activeTab === "tasks" ? "active" : ""} onClick={() => setActiveTab("tasks")}>Tasks</button>
+        <button className={activeTab === "actions" ? "active" : ""} onClick={() => setActiveTab("actions")}>Actions</button>
+        <a href="/defects">Defects</a>
+      </nav>
+
       <section className="dashboard">
         <div className="metric"><span>Total Tasks</span><strong>{metrics.total}</strong></div>
         <div className="metric"><span>Completed</span><strong>{metrics.completed}</strong></div>

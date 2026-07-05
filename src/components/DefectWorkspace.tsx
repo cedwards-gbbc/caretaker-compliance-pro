@@ -226,6 +226,13 @@ export default function DefectWorkspace({
         </div>
       </header>
 
+      <nav className="defect-mobile-top-tabs" aria-label="Mobile defect navigation">
+        <a href="/">Calendar</a>
+        <a href="/">Tasks</a>
+        <a href="/">Actions</a>
+        <span className="active">Defects</span>
+      </nav>
+
       <section className="dashboard">
         <div className="metric"><span>Total Defects</span><strong>{metrics.total}</strong></div>
         <div className="metric warning"><span>Open</span><strong>{metrics.open}</strong></div>

@@ -1433,3 +1433,72 @@ h3 {
   }
 }
 
+
+/* Mobile top tabs: replaces action summary and bottom nav */
+.mobile-top-tabs,
+.defect-mobile-top-tabs {
+  display: none;
+}
+
+@media (max-width: 780px) {
+  .mobile-summary {
+    display: none !important;
+  }
+
+  .mobile-bottom-nav,
+  .defect-mobile-bottom-nav {
+    display: none !important;
+  }
+
+  body {
+    padding-bottom: 24px !important;
+  }
+
+  .mobile-top-tabs,
+  .defect-mobile-top-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 10px 12px 10px;
+    padding: 6px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, .18);
+  }
+
+  .mobile-top-tabs button,
+  .mobile-top-tabs a,
+  .defect-mobile-top-tabs a,
+  .defect-mobile-top-tabs span {
+    min-height: 38px !important;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 800;
+    text-align: center;
+    text-decoration: none;
+    display: grid;
+    place-items: center;
+    padding: 8px 4px;
+  }
+
+  .mobile-top-tabs button.active,
+  .defect-mobile-top-tabs span.active {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  .mobile-fab {
+    bottom: 18px !important;
+  }
+
+  .calendar-layout,
+  .layout,
+  .mobile-action-layout {
+    padding-bottom: 74px !important;
+  }
+}
+
