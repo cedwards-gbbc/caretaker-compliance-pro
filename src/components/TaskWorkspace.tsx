@@ -41,48 +41,6 @@ function getPaymentStatus(task: AnyTask) {
 
 function needsCommitteeAction(task: AnyTask) {
   const pay = getPaymentStatus(task);
-
-  async function voidTask(taskId: string) {
-    const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
-    if (!reason || !reason.trim()) return;
-
-    const res = await fetch(`/api/tasks/${taskId}/void`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Failed to void task.");
-      return;
-    }
-
-    const reloadRes = await fetch("/api/tasks?view=active");
-    const reloadData = await reloadRes.json();
-    setTasks(reloadData.tasks);
-    setTaskView("active");
-  }
-
-  async function restoreTask(taskId: string) {
-    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
-
-    const res = await fetch(`/api/tasks/${taskId}/restore`, {
-      method: "POST"
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Failed to restore task.");
-      return;
-    }
-
-    const reloadRes = await fetch("/api/tasks?view=voided");
-    const reloadData = await reloadRes.json();
-    setTasks(reloadData.tasks);
-    setTaskView("voided");
-  }
-
   return (
     task.committeeApprovalRequired ||
     task.followUpRequired ||
@@ -141,193 +99,11 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const [paymentFilter, setPaymentFilter] = useState("");
   const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
 
-  async function refresh(viewOverride?: "active" | "voided" | "all") {
-    const view = viewOverride ?? taskView;
+  async function reloadTasks(view: "active" | "voided" | "all" = taskView) {
     const res = await fetch(`/api/tasks?view=${view}`);
     const data = await res.json();
     setTasks(data.tasks);
   }
-
-
-  const [activeTab, setActiveTab] = useState<"tasks" | "calendar">("calendar");
-
-  const now = new Date();
-  const [calendarYear, setCalendarYear] = useState(now.getFullYear());
-  const [calendarMonth, setCalendarMonth] = useState(now.getMonth());
-  const [selectedDate, setSelectedDate] = useState(isoDate(initialTasks[0]?.dueDate) || now.toISOString().slice(0, 10));
-
-  const selected = tasks.find((t) => t.id === selectedId) ?? tasks[0] ?? null;
-
-  const metrics = useMemo(() => {
-    return {
-      total: tasks.length,
-      completed: tasks.filter((t) => t.status === "COMPLETED").length,
-      due: tasks.filter((t) => t.dueDate && !["COMPLETED", "NOT_REQUIRED"].includes(t.status) && new Date(t.dueDate) <= new Date()).length,
-      action: tasks.filter(needsCommitteeAction).length,
-      blocked: tasks.filter((t) => getPaymentStatus(t) === "BLOCKED").length,
-      missingEvidence: tasks.filter(isMissingEvidence).length
-    };
-  }, [tasks]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return tasks.filter((t) => {
-      const fc = t.financialControl;
-      const blob = [
-        t.taskCode,
-        t.areaAsset,
-        t.category,
-        t.requirement,
-        t.responsibleParty,
-        t.contractorCompany,
-        t.status,
-        t.dayDriveFolderUrl,
-        t.taskDriveFolderUrl,
-        fc?.quoteContractor,
-        fc?.quoteNumber,
-        fc?.invoiceContractor,
-        fc?.invoiceNumber,
-        fc?.paymentStatus,
-        fc?.paymentBlockReason
-      ].join(" ").toLowerCase();
-
-      return (!q || blob.includes(q)) && (!paymentFilter || fc?.paymentStatus === paymentFilter);
-    });
-  }, [tasks, query, paymentFilter]);
-
-  const calendarDays = useMemo(() => buildCalendarDays(calendarYear, calendarMonth), [calendarYear, calendarMonth]);
-
-  const tasksByDate = useMemo(() => {
-    const map = new Map<string, AnyTask[]>();
-    for (const task of tasks) {
-      const due = isoDate(task.dueDate);
-      if (!due) continue;
-      if (!map.has(due)) map.set(due, []);
-      map.get(due)?.push(task);
-    }
-    return map;
-  }, [tasks]);
-
-  const selectedDateTasks = tasksByDate.get(selectedDate) ?? [];
-  const selectedDateFolder = selectedDateTasks.find((t) => t.dayDriveFolderUrl)?.dayDriveFolderUrl ?? "";
-
-  async function createTask() {
-    const schemeId = schemes[0]?.id;
-    if (!schemeId) {
-      alert("Create or seed a scheme first.");
-      return;
-    }
-
-    const res = await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schemeId, dueDate: selectedDate })
-    });
-    const data = await res.json();
-    await refresh();
-    setSelectedId(data.task.id);
-    setActiveTab("tasks");
-  }
-
-  async function saveTask(formData: FormData) {
-    if (!selected) return;
-    const payload = Object.fromEntries(formData.entries());
-
-    const res = await fetch(`/api/tasks/${selected.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Save failed");
-      return;
-    }
-
-    await refresh();
-  }
-
-  async function stampActioned() {
-    if (!selected) return;
-    const res = await fetch(`/api/tasks/${selected.id}/stamp-actioned`, { method: "POST" });
-    if (!res.ok) alert("Failed to stamp actioned.");
-    await refresh();
-  }
-
-  async function uploadFiles(formData: FormData) {
-    if (!selected) return;
-    const res = await fetch(`/api/tasks/${selected.id}/files`, {
-      method: "POST",
-      body: formData
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Upload failed");
-    }
-    await refresh();
-  }
-
-  function prevMonth() {
-    const d = new Date(calendarYear, calendarMonth - 1, 1);
-    setCalendarYear(d.getFullYear());
-    setCalendarMonth(d.getMonth());
-  }
-
-  function nextMonth() {
-    const d = new Date(calendarYear, calendarMonth + 1, 1);
-    setCalendarYear(d.getFullYear());
-    setCalendarMonth(d.getMonth());
-  }
-
-  function thisMonth() {
-    const d = new Date();
-    setCalendarYear(d.getFullYear());
-    setCalendarMonth(d.getMonth());
-    setSelectedDate(d.toISOString().slice(0, 10));
-  }
-
-  async function voidTask(taskId: string) {
-    const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
-    if (!reason || !reason.trim()) return;
-
-    const res = await fetch(`/api/tasks/${taskId}/void`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Failed to void task.");
-      return;
-    }
-
-    const reloadRes = await fetch("/api/tasks?view=active");
-    const reloadData = await reloadRes.json();
-    setTasks(reloadData.tasks);
-    setTaskView("active");
-  }
-
-  async function restoreTask(taskId: string) {
-    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
-
-    const res = await fetch(`/api/tasks/${taskId}/restore`, {
-      method: "POST"
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Failed to restore task.");
-      return;
-    }
-
-    const reloadRes = await fetch("/api/tasks?view=voided");
-    const reloadData = await reloadRes.json();
-    setTasks(reloadData.tasks);
-    setTaskView("voided");
-  }
-
   return (
     <>
       <header className="app-header">
@@ -338,7 +114,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
         <div className="header-actions">
           <button className="secondary" onClick={() => setActiveTab("calendar")}>Calendar</button>
           <button className="secondary" onClick={() => setActiveTab("tasks")}>Task Register</button>
-          <button className="secondary" onClick={() => refresh()}>Refresh</button>
+          <button className="secondary" onClick={() => reloadTasks()}>Refresh</button>
           <button onClick={createTask}>New Task</button>
         </div>
       </header>
@@ -506,7 +282,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                 onChange={async (e) => {
                   const nextView = e.target.value as "active" | "voided" | "all";
                   setTaskView(nextView);
-                  await refresh(nextView);
+                  await reloadTasks(nextView);
                 }}
               >
                 <option value="active">Active Schedule</option>
@@ -577,48 +353,6 @@ function TaskDetail({
 }) {
   const fc = task.financialControl ?? {};
   const pay = fc.paymentStatus ?? "PENDING";
-
-  async function voidTask(taskId: string) {
-    const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
-    if (!reason || !reason.trim()) return;
-
-    const res = await fetch(`/api/tasks/${taskId}/void`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reason })
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Failed to void task.");
-      return;
-    }
-
-    const reloadRes = await fetch("/api/tasks?view=active");
-    const reloadData = await reloadRes.json();
-    setTasks(reloadData.tasks);
-    setTaskView("active");
-  }
-
-  async function restoreTask(taskId: string) {
-    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
-
-    const res = await fetch(`/api/tasks/${taskId}/restore`, {
-      method: "POST"
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.error ?? "Failed to restore task.");
-      return;
-    }
-
-    const reloadRes = await fetch("/api/tasks?view=voided");
-    const reloadData = await reloadRes.json();
-    setTasks(reloadData.tasks);
-    setTaskView("voided");
-  }
-
   return (
     <>
       <div className="detail-head">
