@@ -58,7 +58,9 @@ function needsCommitteeAction(task: AnyTask) {
       return;
     }
 
-    await refresh("active");
+    const reloadRes = await fetch("/api/tasks?view=active");
+    const reloadData = await reloadRes.json();
+    setTasks(reloadData.tasks);
     setTaskView("active");
   }
 
@@ -75,7 +77,9 @@ function needsCommitteeAction(task: AnyTask) {
       return;
     }
 
-    await refresh("voided");
+    const reloadRes = await fetch("/api/tasks?view=voided");
+    const reloadData = await reloadRes.json();
+    setTasks(reloadData.tasks);
     setTaskView("voided");
   }
 
@@ -299,7 +303,9 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
       return;
     }
 
-    await refresh("active");
+    const reloadRes = await fetch("/api/tasks?view=active");
+    const reloadData = await reloadRes.json();
+    setTasks(reloadData.tasks);
     setTaskView("active");
   }
 
@@ -316,7 +322,9 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
       return;
     }
 
-    await refresh("voided");
+    const reloadRes = await fetch("/api/tasks?view=voided");
+    const reloadData = await reloadRes.json();
+    setTasks(reloadData.tasks);
     setTaskView("voided");
   }
 
@@ -586,7 +594,9 @@ function TaskDetail({
       return;
     }
 
-    await refresh("active");
+    const reloadRes = await fetch("/api/tasks?view=active");
+    const reloadData = await reloadRes.json();
+    setTasks(reloadData.tasks);
     setTaskView("active");
   }
 
@@ -603,7 +613,9 @@ function TaskDetail({
       return;
     }
 
-    await refresh("voided");
+    const reloadRes = await fetch("/api/tasks?view=voided");
+    const reloadData = await reloadRes.json();
+    setTasks(reloadData.tasks);
     setTaskView("voided");
   }
 
