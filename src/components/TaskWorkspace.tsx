@@ -493,13 +493,14 @@ export default function TaskWorkspace({
                           type="button"
                           key={task.id}
                           className={`calendar-item ${calendarItemClass(task)}`}
+                          title={`${task.taskCode ?? ""} ${task.areaAsset ?? ""}`}
                           onClick={(event) => {
                             event.stopPropagation();
                             setSelectedId(task.id);
                             setSelectedDate(key);
                           }}
                         >
-                          {task.areaAsset}
+                          {task.taskCode ? `${task.taskCode.replace("CT-", "")} - ${task.areaAsset}` : task.areaAsset}
                         </button>
                       ))}
                       {dayTasks.length > 4 && <span className="more-items">+{dayTasks.length - 4} more</span>}

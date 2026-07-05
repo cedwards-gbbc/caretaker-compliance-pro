@@ -1371,3 +1371,65 @@ h3 {
   }
 }
 
+
+/* Mobile calendar cleanup: hide next-month spillover, reduce legend noise, compact task chips */
+@media (max-width: 780px) {
+  .calendar-toolbar .legend {
+    display: none !important;
+  }
+
+  .calendar-cell.muted-cell {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .calendar-cell {
+    min-height: 68px !important;
+  }
+
+  .calendar-items {
+    gap: 3px !important;
+  }
+
+  .calendar-item {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 20px !important;
+    max-height: 22px !important;
+    padding: 3px 5px !important;
+    font-size: 8.5px !important;
+    line-height: 1.05 !important;
+    border-radius: 7px !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .more-items {
+    font-size: 8px !important;
+    line-height: 1 !important;
+  }
+
+  .calendar-cell-head {
+    margin-bottom: 3px !important;
+  }
+
+  .calendar-cell-head strong {
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .calendar-cell {
+    min-height: 62px !important;
+  }
+
+  .calendar-item {
+    font-size: 8px !important;
+    min-height: 18px !important;
+    max-height: 20px !important;
+  }
+}
+
