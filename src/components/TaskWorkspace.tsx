@@ -101,6 +101,31 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
   const [activeTab, setActiveTab] = useState<"calendar" | "tasks">("calendar");
 
+  const metrics = {
+    total: tasks.length,
+    completed: tasks.filter((t) => t.status === "COMPLETED").length,
+    due: tasks.filter((t) => {
+      if (!t.dueDate) return false;
+      if (["COMPLETED", "NOT_REQUIRED"].includes(t.status)) return false;
+      return new Date(t.dueDate) <= new Date();
+    }).length,
+    action: tasks.filter((t) =>
+      t.committeeApprovalRequired ||
+      t.followUpRequired ||
+      t.status === "NEEDS_FOLLOW_UP" ||
+      t.status === "ESCALATED_TO_COMMITTEE" ||
+      t.financialControl?.paymentStatus === "BLOCKED" ||
+      t.financialControl?.paymentStatus === "WARNING"
+    ).length,
+    blocked: tasks.filter((t) => t.financialControl?.paymentStatus === "BLOCKED").length,
+    missingEvidence: tasks.filter((t) =>
+      ["ACTIONED", "COMPLETED"].includes(t.status) &&
+      (!t.documents || t.documents.length === 0)
+    ).length
+  };
+
+
+
   async function reloadTasks(view: "active" | "voided" | "all" = taskView) {
     const res = await fetch(`/api/tasks?view=${view}`);
     const data = await res.json();
