@@ -1813,3 +1813,89 @@ h3 {
   font-weight: 800;
 }
 
+
+/* Mobile layout cleanup: one selected-date area only */
+@media (max-width: 780px) {
+  /* Hide the lower selected date/day details block on mobile.
+     The selected date now lives under the month title above the calendar. */
+  .day-panel,
+  .selected-day-panel,
+  .selected-date-panel {
+    display: none !important;
+  }
+
+  /* Square off the main mobile blocks */
+  .app-shell,
+  .app-header,
+  .hero,
+  .workspace-header,
+  .mobile-top-tabs,
+  .calendar-card,
+  .calendar-panel,
+  .calendar-shell,
+  .card {
+    border-radius: 0 !important;
+  }
+
+  /* Clean top title block */
+  .app-header,
+  .hero,
+  .workspace-header {
+    margin: 0 !important;
+    padding: 18px 16px 16px !important;
+    border-radius: 0 !important;
+  }
+
+  .app-header h1,
+  .hero h1,
+  .workspace-header h1 {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+    margin: 0 !important;
+  }
+
+  /* Better spacing between title and tabs */
+  .mobile-top-tabs {
+    margin: 0 !important;
+    padding: 8px 10px !important;
+    border-radius: 0 !important;
+    gap: 6px !important;
+  }
+
+  .mobile-top-tabs button,
+  .mobile-top-tabs a {
+    min-height: 42px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    padding: 9px 10px !important;
+  }
+
+  /* Square the calendar block and reduce wasted vertical space */
+  .calendar-card,
+  .calendar-panel,
+  .calendar-shell {
+    margin: 12px 0 0 !important;
+    border-radius: 0 !important;
+  }
+
+  .calendar-toolbar {
+    padding-top: 6px !important;
+  }
+
+  .calendar-title-block {
+    margin-top: 8px !important;
+  }
+
+  .calendar-title-block h2 {
+    font-size: 22px !important;
+    line-height: 1.15 !important;
+    margin: 0 !important;
+  }
+
+  .selected-date-label {
+    margin-top: 3px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+  }
+}
+
