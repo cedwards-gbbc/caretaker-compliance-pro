@@ -55,6 +55,45 @@ enum DocumentCategory {
   OTHER
 }
 
+
+enum DefectStatus {
+  REPORTED
+  UNDER_REVIEW
+  INSPECTION_REQUIRED
+  QUOTE_REQUIRED
+  AWAITING_APPROVAL
+  APPROVED_FOR_REPAIR
+  REPAIR_SCHEDULED
+  REPAIR_COMPLETED
+  VERIFICATION_REQUIRED
+  MONITORING
+  CLOSED
+  REJECTED
+}
+
+enum RiskRating {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum Urgency {
+  NORMAL
+  URGENT
+  EMERGENCY
+}
+
+enum DefectTaskPurpose {
+  INSPECTION
+  QUOTE
+  APPROVAL
+  REPAIR
+  FOLLOW_UP
+  MONITORING
+  OTHER
+}
+
 enum Visibility {
   INTERNAL_ONLY
   COMMITTEE_ONLY
@@ -81,6 +120,7 @@ model Scheme {
   createdAt DateTime @default(now())
 
   tasks Task[]
+  defects Defect[]
 }
 
 model Task {
@@ -132,6 +172,7 @@ model Task {
   documents          EvidenceFile[]
   financialControl   FinancialControl?
   auditEvents        AuditEvent[]
+  defectLinks        DefectTaskLink[]
 
   @@index([schemeId])
   @@index([status])
@@ -228,3 +269,88 @@ model AuditEvent {
 
   @@index([taskId])
 }
+
+
+model Defect {
+  id                         String       @id @default(cuid())
+  defectCode                 String       @unique
+  schemeId                   String
+  scheme                     Scheme       @relation(fields: [schemeId], references: [id], onDelete: Cascade)
+
+  title                      String
+  description                String
+  location                   String?
+  lotReference               String?
+  assetCategory              String?
+  commonPropertyImpact       Boolean      @default(true)
+
+  riskRating                 RiskRating   @default(MEDIUM)
+  urgency                    Urgency      @default(NORMAL)
+  status                     DefectStatus @default(REPORTED)
+
+  reportedBy                 String?
+  reportedDate               DateTime     @default(now())
+  responsibleParty           String?
+  insuranceRelevant          Boolean      @default(false)
+  legalSensitive             Boolean      @default(false)
+  committeeApprovalRequired  Boolean      @default(false)
+  ownerCommunicationRequired Boolean      @default(false)
+
+  estimatedCost              Float?
+  actualCost                 Float?
+  fundingSource              String?
+
+  evidenceFolderUrl          String?
+  photoFolderUrl             String?
+  documentFolderUrl          String?
+
+  closureEvidenceRequired    Boolean      @default(true)
+  closureTaskId              String?
+  closedAt                   DateTime?
+  closedBy                   String?
+  closureNotes               String?
+  reopenedAt                 DateTime?
+  reopenReason               String?
+
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime     @updatedAt
+
+  taskLinks                  DefectTaskLink[]
+  auditEvents                DefectAuditEvent[]
+
+  @@index([schemeId])
+  @@index([status])
+  @@index([riskRating])
+  @@index([urgency])
+  @@index([reportedDate])
+}
+
+model DefectTaskLink {
+  id            String            @id @default(cuid())
+  defectId      String
+  taskId        String
+  purpose       DefectTaskPurpose @default(OTHER)
+  isClosureTask Boolean           @default(false)
+  notes         String?
+  createdAt     DateTime          @default(now())
+
+  defect        Defect            @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  task          Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([defectId, taskId])
+  @@index([defectId])
+  @@index([taskId])
+  @@index([purpose])
+}
+
+model DefectAuditEvent {
+  id        String   @id @default(cuid())
+  defectId  String
+  defect    Defect   @relation(fields: [defectId], references: [id], onDelete: Cascade)
+  eventType String
+  detail    String
+  createdAt DateTime @default(now())
+
+  @@index([defectId])
+}
+

@@ -346,6 +346,7 @@ export default function TaskWorkspace({
         <div className="header-actions">
           <button className="secondary" onClick={() => setActiveTab("calendar")}>Calendar</button>
           <button className="secondary" onClick={() => setActiveTab("tasks")}>Task Register</button>
+          <a className="button-link secondary-link" href="/defects">Defect Register</a>
           <button className="secondary" onClick={() => reloadTasks()}>Refresh</button>
           <button onClick={createTask}>New Task</button>
         </div>

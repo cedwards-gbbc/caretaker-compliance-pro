@@ -28,7 +28,8 @@ export async function GET(req: Request) {
       checklistItems: { orderBy: { sortOrder: "asc" } },
       documents: { orderBy: { uploadedAt: "desc" } },
       financialControl: true,
-      auditEvents: { orderBy: { createdAt: "desc" }, take: 20 }
+      auditEvents: { orderBy: { createdAt: "desc" }, take: 20 },
+      defectLinks: { include: { defect: true } }
     }
   });
 
