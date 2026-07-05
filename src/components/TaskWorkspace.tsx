@@ -4,10 +4,22 @@ import { useMemo, useState } from "react";
 
 type AnyTask = any;
 type Scheme = any;
+type TaskView = "active" | "voided" | "all";
+type ActiveTab = "calendar" | "tasks";
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December"
 ];
 
 function statusClass(status: string) {
@@ -28,11 +40,6 @@ function money(value: number | null | undefined) {
 function isoDate(value: string | null | undefined) {
   if (!value) return "";
   return new Date(value).toISOString().slice(0, 10);
-}
-
-function displayDate(value: string | null | undefined) {
-  if (!value) return "No date";
-  return new Date(value).toLocaleDateString();
 }
 
 function getPaymentStatus(task: AnyTask) {
@@ -62,10 +69,13 @@ function isMissingEvidence(task: AnyTask) {
 function isOverdue(task: AnyTask) {
   if (!task.dueDate) return false;
   if (["COMPLETED", "NOT_REQUIRED"].includes(task.status)) return false;
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
   const due = new Date(task.dueDate);
   due.setHours(0, 0, 0, 0);
+
   return due < today;
 }
 
@@ -83,25 +93,108 @@ function buildCalendarDays(year: number, month: number) {
   const start = new Date(first);
   start.setDate(first.getDate() - first.getDay());
 
-  const days = [];
+  const days: Date[] = [];
   const cursor = new Date(start);
+
   for (let i = 0; i < 42; i++) {
     days.push(new Date(cursor));
     cursor.setDate(cursor.getDate() + 1);
   }
+
   return days;
 }
 
-export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks: AnyTask[]; schemes: Scheme[] }) {
-  const [tasks, setTasks] = useState<AnyTask[]>(initialTasks);
-  const [selectedId, setSelectedId] = useState<string | null>(initialTasks[0]?.id ?? null);
+export default function TaskWorkspace({
+  initialTasks,
+  schemes
+}: {
+  initialTasks: AnyTask[];
+  schemes: Scheme[];
+}) {
+  const [tasks, setTasks] = useState<AnyTask[]>(initialTasks || []);
+  const [selectedId, setSelectedId] = useState<string | null>(initialTasks?.[0]?.id ?? null);
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
-  const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
-  const [activeTab, setActiveTab] = useState<"calendar" | "tasks">("calendar");
+  const [taskView, setTaskView] = useState<TaskView>("active");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("calendar");
   const [calendarYear, setCalendarYear] = useState<number>(new Date().getFullYear());
   const [calendarMonth, setCalendarMonth] = useState<number>(new Date().getMonth());
+
+  const selected = tasks.find((task) => task.id === selectedId) ?? tasks[0] ?? null;
+
+  const metrics = useMemo(() => {
+    return {
+      total: tasks.length,
+      completed: tasks.filter((task) => task.status === "COMPLETED").length,
+      due: tasks.filter((task) => {
+        if (!task.dueDate) return false;
+        if (["COMPLETED", "NOT_REQUIRED"].includes(task.status)) return false;
+        return new Date(task.dueDate) <= new Date();
+      }).length,
+      action: tasks.filter(needsCommitteeAction).length,
+      blocked: tasks.filter((task) => getPaymentStatus(task) === "BLOCKED").length,
+      missingEvidence: tasks.filter(isMissingEvidence).length
+    };
+  }, [tasks]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+
+    return tasks.filter((task) => {
+      const fc = task.financialControl;
+      const blob = [
+        task.taskCode,
+        task.areaAsset,
+        task.category,
+        task.requirement,
+        task.responsibleParty,
+        task.contractorCompany,
+        task.status,
+        task.dayDriveFolderUrl,
+        task.taskDriveFolderUrl,
+        fc?.quoteContractor,
+        fc?.quoteNumber,
+        fc?.invoiceContractor,
+        fc?.invoiceNumber,
+        fc?.paymentStatus,
+        fc?.paymentBlockReason
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return (!q || blob.includes(q)) && (!paymentFilter || fc?.paymentStatus === paymentFilter);
+    });
+  }, [tasks, query, paymentFilter]);
+
+  const calendarDays = useMemo(
+    () => buildCalendarDays(calendarYear, calendarMonth),
+    [calendarYear, calendarMonth]
+  );
+
+  const tasksByDate = useMemo(() => {
+    const map = new Map<string, AnyTask[]>();
+
+    for (const task of tasks) {
+      if (task.isDeleted) continue;
+      const due = isoDate(task.dueDate);
+      if (!due) continue;
+      if (!map.has(due)) map.set(due, []);
+      map.get(due)?.push(task);
+    }
+
+    return map;
+  }, [tasks]);
+
+  const selectedDateTasks = tasksByDate.get(selectedDate) ?? [];
+  const selectedDateFolder =
+    selectedDateTasks.find((task) => task.dayDriveFolderUrl)?.dayDriveFolderUrl ?? "";
+
+  async function reloadTasks(view: TaskView = taskView) {
+    const res = await fetch(`/api/tasks?view=${view}`);
+    const data = await res.json();
+    setTasks(data.tasks || []);
+  }
 
   function thisMonth() {
     const today = new Date();
@@ -111,69 +204,19 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   }
 
   function prevMonth() {
-    const d = new Date(calendarYear, calendarMonth - 1, 1);
-    setCalendarYear(d.getFullYear());
-    setCalendarMonth(d.getMonth());
+    const date = new Date(calendarYear, calendarMonth - 1, 1);
+    setCalendarYear(date.getFullYear());
+    setCalendarMonth(date.getMonth());
   }
 
   function nextMonth() {
-    const d = new Date(calendarYear, calendarMonth + 1, 1);
-    setCalendarYear(d.getFullYear());
-    setCalendarMonth(d.getMonth());
-  }
-
-
-  const calendarDays = (() => {
-    const first = new Date(calendarYear, calendarMonth, 1);
-    const start = new Date(first);
-    start.setDate(first.getDate() - first.getDay());
-
-    const days: Date[] = [];
-    const cursor = new Date(start);
-
-    for (let i = 0; i < 42; i++) {
-      days.push(new Date(cursor));
-      cursor.setDate(cursor.getDate() + 1);
-    }
-
-    return days;
-  })();
-
-
-
-  const metrics = {
-    total: tasks.length,
-    completed: tasks.filter((t) => t.status === "COMPLETED").length,
-    due: tasks.filter((t) => {
-      if (!t.dueDate) return false;
-      if (["COMPLETED", "NOT_REQUIRED"].includes(t.status)) return false;
-      return new Date(t.dueDate) <= new Date();
-    }).length,
-    action: tasks.filter((t) =>
-      t.committeeApprovalRequired ||
-      t.followUpRequired ||
-      t.status === "NEEDS_FOLLOW_UP" ||
-      t.status === "ESCALATED_TO_COMMITTEE" ||
-      t.financialControl?.paymentStatus === "BLOCKED" ||
-      t.financialControl?.paymentStatus === "WARNING"
-    ).length,
-    blocked: tasks.filter((t) => t.financialControl?.paymentStatus === "BLOCKED").length,
-    missingEvidence: tasks.filter((t) =>
-      ["ACTIONED", "COMPLETED"].includes(t.status) &&
-      (!t.documents || t.documents.length === 0)
-    ).length
-  };
-
-
-
-  async function reloadTasks(view: "active" | "voided" | "all" = taskView) {
-    const res = await fetch(`/api/tasks?view=${view}`);
-    const data = await res.json();
-    setTasks(data.tasks);
+    const date = new Date(calendarYear, calendarMonth + 1, 1);
+    setCalendarYear(date.getFullYear());
+    setCalendarMonth(date.getMonth());
   }
 
   async function createTask() {
-    const schemeId = schemes[0]?.id;
+    const schemeId = schemes?.[0]?.id;
 
     if (!schemeId) {
       alert("Create or seed a scheme first.");
@@ -183,7 +226,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
     const res = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schemeId })
+      body: JSON.stringify({ schemeId, dueDate: selectedDate })
     });
 
     if (!res.ok) {
@@ -199,12 +242,106 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
     setActiveTab("tasks");
   }
 
+  async function voidTask(taskId: string) {
+    const reason = window.prompt(
+      "Void reason required. Example: Created by mistake / Duplicate / Wrong date"
+    );
+
+    if (!reason || !reason.trim()) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/void`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to void task.");
+      return;
+    }
+
+    setTaskView("active");
+    await reloadTasks("active");
+  }
+
+  async function restoreTask(taskId: string) {
+    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/restore`, {
+      method: "POST"
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to restore task.");
+      return;
+    }
+
+    setTaskView("voided");
+    await reloadTasks("voided");
+  }
+
+  async function saveTask(formData: FormData) {
+    if (!selected) return;
+
+    const payload = Object.fromEntries(formData.entries());
+    const res = await fetch(`/api/tasks/${selected.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Save failed.");
+      return;
+    }
+
+    await reloadTasks(taskView);
+  }
+
+  async function stampActioned() {
+    if (!selected) return;
+
+    const res = await fetch(`/api/tasks/${selected.id}/stamp-actioned`, {
+      method: "POST"
+    });
+
+    if (!res.ok) {
+      alert("Failed to stamp actioned.");
+      return;
+    }
+
+    await reloadTasks(taskView);
+  }
+
+  async function uploadFiles(formData: FormData) {
+    if (!selected) return;
+
+    const res = await fetch(`/api/tasks/${selected.id}/files`, {
+      method: "POST",
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Upload failed.");
+      return;
+    }
+
+    await reloadTasks(taskView);
+  }
+
   return (
     <>
       <header className="app-header">
         <div>
           <h1>Caretaker Compliance Pro</h1>
-          <p>Body corporate maintenance calendar, evidence folders, task control, and quote vs invoice matching.</p>
+          <p>
+            Maintenance scheduler for property manager / caretaker tasks, evidence folders,
+            committee visibility, and quote vs invoice controls.
+          </p>
         </div>
         <div className="header-actions">
           <button className="secondary" onClick={() => setActiveTab("calendar")}>Calendar</button>
@@ -242,8 +379,8 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
             </div>
 
             <div className="calendar-grid">
-              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-                <div key={d} className="calendar-day-name">{d}</div>
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((dayName) => (
+                <div key={dayName} className="calendar-day-name">{dayName}</div>
               ))}
 
               {calendarDays.map((day) => {
@@ -251,7 +388,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                 const dayTasks = tasksByDate.get(key) ?? [];
                 const isCurrentMonth = day.getMonth() === calendarMonth;
                 const isSelected = key === selectedDate;
-                const driveFolder = dayTasks.find((t) => t.dayDriveFolderUrl)?.dayDriveFolderUrl;
+                const driveFolder = dayTasks.find((task) => task.dayDriveFolderUrl)?.dayDriveFolderUrl;
 
                 return (
                   <div
@@ -267,21 +404,22 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                           target="_blank"
                           rel="noreferrer"
                           className="drive-link"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(event) => event.stopPropagation()}
                           title="Open day evidence folder"
                         >
                           📁
                         </a>
                       )}
                     </div>
+
                     <div className="calendar-items">
                       {dayTasks.slice(0, 4).map((task) => (
                         <button
                           type="button"
                           key={task.id}
                           className={`calendar-item ${calendarItemClass(task)}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={(event) => {
+                            event.stopPropagation();
                             setSelectedId(task.id);
                             setSelectedDate(key);
                           }}
@@ -300,14 +438,23 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
           <aside className="panel day-panel">
             <div className="panel-title">
               <div>
-                <h2>{new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</h2>
+                <h2>
+                  {new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric"
+                  })}
+                </h2>
                 <p className="muted">{selectedDateTasks.length} task(s) due</p>
               </div>
             </div>
 
             <div className="row-actions">
               {selectedDateFolder ? (
-                <a href={selectedDateFolder} target="_blank" rel="noreferrer" className="button-link">Open Day Evidence Folder</a>
+                <a href={selectedDateFolder} target="_blank" rel="noreferrer" className="button-link">
+                  Open Day Evidence Folder
+                </a>
               ) : (
                 <span className="muted">No day folder linked</span>
               )}
@@ -321,12 +468,12 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                 selectedDateTasks.map((task) => {
                   const fc = task.financialControl;
                   const pay = getPaymentStatus(task);
+
                   return (
                     <div key={task.id} className="day-task-card">
                       <div className="day-task-title">
                         <strong>{task.taskCode} · {task.areaAsset}</strong>
                         <span className={`pill ${statusClass(pay)}`}>{pay}</span>
-                    {t.isDeleted && <span className="pill voided">VOIDED</span>}
                       </div>
                       <p>{task.category} · {task.responsibleParty ?? "Unassigned"}</p>
                       <p><strong>Company:</strong> {task.contractorCompany || fc?.quoteContractor || "Not set"}</p>
@@ -356,12 +503,12 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
 
             <label className="field">
               <span>Search</span>
-              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Task, contractor, quote, invoice, Drive link..." />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Task, contractor, quote, invoice, Drive link..." />
             </label>
 
             <label className="field">
               <span>Financial Control</span>
-              <select value={paymentFilter} onChange={(e) => setPaymentFilter(e.target.value)}>
+              <select value={paymentFilter} onChange={(event) => setPaymentFilter(event.target.value)}>
                 <option value="">All</option>
                 <option value="PASS">Pass</option>
                 <option value="WARNING">Warning</option>
@@ -374,8 +521,8 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
               <span>Task View</span>
               <select
                 value={taskView}
-                onChange={async (e) => {
-                  const nextView = e.target.value as "active" | "voided" | "all";
+                onChange={async (event) => {
+                  const nextView = event.target.value as TaskView;
                   setTaskView(nextView);
                   await reloadTasks(nextView);
                 }}
@@ -387,20 +534,21 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
             </label>
 
             <div className="task-list">
-              {filtered.map((t) => {
-                const fc = t.financialControl;
+              {filtered.map((task) => {
+                const fc = task.financialControl;
                 const pay = fc?.paymentStatus ?? "PENDING";
+
                 return (
                   <div
-                    key={t.id}
-                    className={`task-card ${selected?.id === t.id ? "active" : ""} ${t.isDeleted ? "voided-card" : ""} ${pay === "BLOCKED" ? "blocked" : pay === "WARNING" ? "warning" : ""}`}
-                    onClick={() => setSelectedId(t.id)}
+                    key={task.id}
+                    className={`task-card ${selected?.id === task.id ? "active" : ""} ${task.isDeleted ? "voided-card" : ""} ${pay === "BLOCKED" ? "blocked" : pay === "WARNING" ? "warning" : ""}`}
+                    onClick={() => setSelectedId(task.id)}
                   >
-                    <h4>{t.taskCode} · {t.areaAsset}</h4>
-                    <p>{t.category} · {t.frequency} · {t.responsibleParty ?? "Unassigned"}</p>
-                    <span className="pill">{taskStatusLabel(t.status)}</span>
+                    <h4>{task.taskCode} · {task.areaAsset}</h4>
+                    <p>{task.category} · {task.frequency} · {task.responsibleParty ?? "Unassigned"}</p>
+                    <span className="pill">{taskStatusLabel(task.status)}</span>
                     <span className={`pill ${statusClass(pay)}`}>{pay}</span>
-                    {t.isDeleted && <span className="pill voided">VOIDED</span>}
+                    {task.isDeleted && <span className="pill voided">VOIDED</span>}
                     <p>{fc?.paymentBlockReason ?? "No financial control assessment."}</p>
                   </div>
                 );
@@ -448,6 +596,7 @@ function TaskDetail({
 }) {
   const fc = task.financialControl ?? {};
   const pay = fc.paymentStatus ?? "PENDING";
+
   return (
     <>
       <div className="detail-head">
@@ -485,62 +634,19 @@ function TaskDetail({
           <label className="field">
             <span>Scheme</span>
             <select name="schemeId" defaultValue={task.schemeId}>
-              {schemes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              {schemes.map((scheme) => <option key={scheme.id} value={scheme.id}>{scheme.name}</option>)}
             </select>
           </label>
 
-          <label className="field">
-            <span>Requirement Reference</span>
-            <input name="requirementRef" defaultValue={task.requirementRef ?? ""} />
-          </label>
-
-          <label className="field">
-            <span>Category</span>
-            <input name="category" defaultValue={task.category} />
-          </label>
-
-          <label className="field">
-            <span>Frequency</span>
-            <select name="frequency" defaultValue={task.frequency}>
-              <option>Ad hoc</option>
-              <option>Daily</option>
-              <option>Weekly</option>
-              <option>Fortnightly</option>
-              <option>Monthly</option>
-              <option>Quarterly</option>
-              <option>Annual</option>
-            </select>
-          </label>
-
-          <label className="field">
-            <span>Area / Asset</span>
-            <input name="areaAsset" defaultValue={task.areaAsset} />
-          </label>
-
-          <label className="field">
-            <span>Responsible Party</span>
-            <input name="responsibleParty" defaultValue={task.responsibleParty ?? ""} />
-          </label>
-
-          <label className="field">
-            <span>Contractor / Company Completing Task</span>
-            <input name="contractorCompany" defaultValue={task.contractorCompany ?? ""} />
-          </label>
-
-          <label className="field">
-            <span>Due Date</span>
-            <input name="dueDate" type="date" defaultValue={isoDate(task.dueDate)} />
-          </label>
-
-          <label className="field">
-            <span>Start Time</span>
-            <input name="startTime" type="time" defaultValue={task.startTime ?? ""} />
-          </label>
-
-          <label className="field">
-            <span>End Time</span>
-            <input name="endTime" type="time" defaultValue={task.endTime ?? ""} />
-          </label>
+          <label className="field"><span>Requirement Reference</span><input name="requirementRef" defaultValue={task.requirementRef ?? ""} /></label>
+          <label className="field"><span>Category</span><input name="category" defaultValue={task.category} /></label>
+          <label className="field"><span>Frequency</span><input name="frequency" defaultValue={task.frequency} /></label>
+          <label className="field"><span>Area / Asset</span><input name="areaAsset" defaultValue={task.areaAsset} /></label>
+          <label className="field"><span>Responsible Party</span><input name="responsibleParty" defaultValue={task.responsibleParty ?? ""} /></label>
+          <label className="field"><span>Contractor / Company Completing Task</span><input name="contractorCompany" defaultValue={task.contractorCompany ?? ""} /></label>
+          <label className="field"><span>Due Date</span><input name="dueDate" type="date" defaultValue={isoDate(task.dueDate)} /></label>
+          <label className="field"><span>Start Time</span><input name="startTime" type="time" defaultValue={task.startTime ?? ""} /></label>
+          <label className="field"><span>End Time</span><input name="endTime" type="time" defaultValue={task.endTime ?? ""} /></label>
 
           <label className="field">
             <span>Status</span>
@@ -573,22 +679,10 @@ function TaskDetail({
         <section className="subsection">
           <h3>Google Drive Evidence Folders</h3>
           <div className="grid two">
-            <label className="field">
-              <span>Day Evidence Folder URL</span>
-              <input name="dayDriveFolderUrl" defaultValue={task.dayDriveFolderUrl ?? ""} placeholder="Google Drive folder for this date" />
-            </label>
-            <label className="field">
-              <span>Task Evidence Folder URL</span>
-              <input name="taskDriveFolderUrl" defaultValue={task.taskDriveFolderUrl ?? ""} placeholder="Google Drive folder for this task" />
-            </label>
-            <label className="field">
-              <span>Photo Evidence Folder URL</span>
-              <input name="photoFolderUrl" defaultValue={task.photoFolderUrl ?? ""} placeholder="Google Drive photos folder" />
-            </label>
-            <label className="field">
-              <span>Documents Folder URL</span>
-              <input name="documentFolderUrl" defaultValue={task.documentFolderUrl ?? ""} placeholder="Google Drive documents folder" />
-            </label>
+            <label className="field"><span>Day Evidence Folder URL</span><input name="dayDriveFolderUrl" defaultValue={task.dayDriveFolderUrl ?? ""} /></label>
+            <label className="field"><span>Task Evidence Folder URL</span><input name="taskDriveFolderUrl" defaultValue={task.taskDriveFolderUrl ?? ""} /></label>
+            <label className="field"><span>Photo Evidence Folder URL</span><input name="photoFolderUrl" defaultValue={task.photoFolderUrl ?? ""} /></label>
+            <label className="field"><span>Documents Folder URL</span><input name="documentFolderUrl" defaultValue={task.documentFolderUrl ?? ""} /></label>
           </div>
           <div className="row-actions">
             {task.dayDriveFolderUrl && <a className="button-link" href={task.dayDriveFolderUrl} target="_blank" rel="noreferrer">Open Day Folder</a>}
@@ -600,10 +694,7 @@ function TaskDetail({
 
         <section className="subsection">
           <h3>Quote vs Invoice Financial Control</h3>
-          <div className={`financial-alert ${pay}`}>
-            {pay}: {fc.paymentBlockReason ?? "Not assessed"}
-          </div>
-
+          <div className={`financial-alert ${pay}`}>{pay}: {fc.paymentBlockReason ?? "Not assessed"}</div>
           <div className="summary-grid">
             <div className="summary-box"><span>Variance $</span><strong>{money(fc.varianceAmount)}</strong></div>
             <div className="summary-box"><span>Variance %</span><strong>{Number(fc.variancePercent ?? 0).toFixed(2)}%</strong></div>
@@ -624,37 +715,14 @@ function TaskDetail({
             <label className="field"><span>Invoice Ex GST</span><input type="number" step="0.01" name="invoiceAmountExGst" defaultValue={fc.invoiceAmountExGst ?? ""} /></label>
             <label className="field"><span>Invoice GST</span><input type="number" step="0.01" name="invoiceGst" defaultValue={fc.invoiceGst ?? ""} /></label>
             <label className="field"><span>Invoice Total Inc GST</span><input type="number" step="0.01" name="invoiceTotalIncGst" defaultValue={fc.invoiceTotalIncGst ?? ""} /></label>
-            <label className="field"><span>Allowed Variance %</span><input type="number" step="0.01" name="allowedVariancePercent" defaultValue={fc.allowedVariancePercent ?? 0} /></label>
-            <label className="field"><span>Allowed Variance $</span><input type="number" step="0.01" name="allowedVarianceAmount" defaultValue={fc.allowedVarianceAmount ?? 0} /></label>
-            <label className="field">
-              <span>Variation Approved?</span>
-              <select name="variationApproved" defaultValue={fc.variationApproved ? "true" : "false"}>
-                <option value="false">No</option>
-                <option value="true">Yes</option>
-              </select>
-            </label>
           </div>
-
-          <label className="field">
-            <span>Variation Notes</span>
-            <textarea name="variationNotes" rows={3} defaultValue={fc.variationNotes ?? ""} />
-          </label>
         </section>
 
         <section className="subsection">
           <h3>Outcome / Follow-up</h3>
-          <label className="field">
-            <span>Action Taken</span>
-            <textarea name="actionTaken" rows={3} defaultValue={task.actionTaken ?? ""} />
-          </label>
-          <label className="field">
-            <span>Exception Notes</span>
-            <textarea name="exceptionNotes" rows={3} defaultValue={task.exceptionNotes ?? ""} />
-          </label>
-          <label className="field">
-            <span>Follow-up Notes</span>
-            <textarea name="followUpNotes" rows={3} defaultValue={task.followUpNotes ?? ""} />
-          </label>
+          <label className="field"><span>Action Taken</span><textarea name="actionTaken" rows={3} defaultValue={task.actionTaken ?? ""} /></label>
+          <label className="field"><span>Exception Notes</span><textarea name="exceptionNotes" rows={3} defaultValue={task.exceptionNotes ?? ""} /></label>
+          <label className="field"><span>Follow-up Notes</span><textarea name="followUpNotes" rows={3} defaultValue={task.followUpNotes ?? ""} /></label>
         </section>
 
         <button type="submit">Save Record & Recalculate</button>
@@ -664,87 +732,24 @@ function TaskDetail({
         <h3>Upload Evidence / Documents</h3>
         <form action={onUploadFiles}>
           <div className="grid three">
-            <label className="field">
-              <span>Document Category</span>
-              <select name="category">
-                <option value="PHOTO_EVIDENCE">Photo Evidence</option>
-                <option value="QUOTE">Quote</option>
-                <option value="INVOICE">Invoice</option>
-                <option value="VARIATION_APPROVAL">Variation Approval</option>
-                <option value="COMMITTEE_APPROVAL">Committee Approval</option>
-                <option value="CONTRACTOR_REPORT">Contractor Report</option>
-                <option value="COMPLIANCE_CERTIFICATE">Compliance Certificate</option>
-                <option value="EMAIL_EVIDENCE">Email Evidence</option>
-                <option value="OTHER">Other</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>Visibility</span>
-              <select name="visibility">
-                <option value="COMMITTEE_ONLY">Committee Only</option>
-                <option value="OWNER_VISIBLE">Owner Visible</option>
-                <option value="INTERNAL_ONLY">Internal Only</option>
-                <option value="RESTRICTED">Restricted</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>Files</span>
-              <input name="files" type="file" multiple />
-            </label>
+            <label className="field"><span>Document Category</span><select name="category"><option value="PHOTO_EVIDENCE">Photo Evidence</option><option value="QUOTE">Quote</option><option value="INVOICE">Invoice</option><option value="OTHER">Other</option></select></label>
+            <label className="field"><span>Visibility</span><select name="visibility"><option value="COMMITTEE_ONLY">Committee Only</option><option value="OWNER_VISIBLE">Owner Visible</option><option value="INTERNAL_ONLY">Internal Only</option><option value="RESTRICTED">Restricted</option></select></label>
+            <label className="field"><span>Files</span><input name="files" type="file" multiple /></label>
           </div>
-          <label className="field">
-            <span>Notes</span>
-            <input name="notes" placeholder="e.g. before photo, approved quote, contractor invoice..." />
-          </label>
+          <label className="field"><span>Notes</span><input name="notes" placeholder="e.g. before photo, approved quote, contractor invoice..." /></label>
           <button type="submit">Upload Files</button>
         </form>
-
-        <table className="table">
-          <thead>
-            <tr>
-              <th>File</th>
-              <th>Category</th>
-              <th>Visibility</th>
-              <th>Uploaded</th>
-            </tr>
-          </thead>
-          <tbody>
-            {task.documents?.map((d: any) => (
-              <tr key={d.id}>
-                <td><a href={d.storagePath} target="_blank">{d.originalName}</a><br /><span className="muted">{d.notes}</span></td>
-                <td>{d.category.replaceAll("_", " ")}</td>
-                <td>{d.visibility.replaceAll("_", " ")}</td>
-                <td>{new Date(d.uploadedAt).toLocaleString()}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      <section className="subsection">
-        <h3>Checklist</h3>
-        <table className="table">
-          <tbody>
-            {task.checklistItems?.map((i: any) => (
-              <tr key={i.id}>
-                <td>{i.done ? "✓" : "○"}</td>
-                <td>{i.text}</td>
-                <td>{i.note}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </section>
 
       <section className="subsection">
         <h3>Audit Trail</h3>
         <table className="table">
           <tbody>
-            {task.auditEvents?.map((a: any) => (
-              <tr key={a.id}>
-                <td>{new Date(a.createdAt).toLocaleString()}</td>
-                <td>{a.eventType}</td>
-                <td>{a.detail}</td>
+            {task.auditEvents?.map((event: any) => (
+              <tr key={event.id}>
+                <td>{new Date(event.createdAt).toLocaleString()}</td>
+                <td>{event.eventType}</td>
+                <td>{event.detail}</td>
               </tr>
             ))}
           </tbody>
