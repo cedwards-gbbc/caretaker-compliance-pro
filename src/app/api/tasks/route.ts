@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { nextTaskCode } from "@/lib/taskCode";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const tasks = await prisma.task.findMany({
     orderBy: { updatedAt: "desc" },
@@ -25,6 +27,7 @@ export async function POST(req: Request) {
   if (!scheme) return NextResponse.json({ error: "Scheme not found." }, { status: 400 });
 
   const taskCode = await nextTaskCode();
+  const dueDate = body.dueDate ? new Date(`${body.dueDate}T08:00:00.000Z`) : null;
 
   const task = await prisma.task.create({
     data: {
@@ -34,7 +37,11 @@ export async function POST(req: Request) {
       frequency: body.frequency ?? "Ad hoc",
       areaAsset: body.areaAsset ?? "New caretaker task",
       responsibleParty: body.responsibleParty ?? "Caretaker",
+      contractorCompany: body.contractorCompany ?? "",
       requirement: body.requirement ?? "Define the caretaker requirement.",
+      dueDate,
+      startTime: body.startTime ?? "08:00",
+      endTime: body.endTime ?? "08:30",
       checklistItems: {
         create: [
           { text: "Requirement reviewed", sortOrder: 1 },

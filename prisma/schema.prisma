@@ -106,6 +106,19 @@ model Task {
   followUpDue        DateTime?
   followUpNotes      String?
   calendarEventId    String?
+  startTime          String?
+  endTime            String?
+  contractorCompany  String?
+  quoteRequired      Boolean    @default(false)
+  committeeApprovalRequired Boolean @default(false)
+  dayDriveFolderId   String?
+  dayDriveFolderUrl  String?
+  taskDriveFolderId  String?
+  taskDriveFolderUrl String?
+  photoFolderUrl     String?
+  documentFolderUrl  String?
+  googleDriveSyncStatus String?
+  lastDriveSyncAt    DateTime?
   createdById        String?
   createdBy          User?      @relation("CreatedTasks", fields: [createdById], references: [id])
   createdAt          DateTime   @default(now())
