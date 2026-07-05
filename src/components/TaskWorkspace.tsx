@@ -100,6 +100,29 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const [paymentFilter, setPaymentFilter] = useState("");
   const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
   const [activeTab, setActiveTab] = useState<"calendar" | "tasks">("calendar");
+  const [calendarYear, setCalendarYear] = useState<number>(new Date().getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState<number>(new Date().getMonth());
+
+  function thisMonth() {
+    const today = new Date();
+    setCalendarYear(today.getFullYear());
+    setCalendarMonth(today.getMonth());
+    setSelectedDate(today.toISOString().slice(0, 10));
+  }
+
+  function prevMonth() {
+    const d = new Date(calendarYear, calendarMonth - 1, 1);
+    setCalendarYear(d.getFullYear());
+    setCalendarMonth(d.getMonth());
+  }
+
+  function nextMonth() {
+    const d = new Date(calendarYear, calendarMonth + 1, 1);
+    setCalendarYear(d.getFullYear());
+    setCalendarMonth(d.getMonth());
+  }
+
+
 
   const metrics = {
     total: tasks.length,
