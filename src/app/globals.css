@@ -1899,3 +1899,40 @@ h3 {
   }
 }
 
+
+/* Dakabin Crossing DC app logo */
+.dc-brand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dc-app-logo {
+  width: 58px;
+  height: 40px;
+  display: block;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 0;
+  padding: 2px 4px;
+  box-shadow: none;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 780px) {
+  .dc-brand-row {
+    gap: 10px;
+  }
+
+  .dc-app-logo {
+    width: 52px;
+    height: 36px;
+    padding: 2px 3px;
+  }
+
+  .dc-brand-row h1 {
+    font-size: 22px !important;
+    line-height: 1.1 !important;
+  }
+}
+

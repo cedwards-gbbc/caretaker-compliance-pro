@@ -358,7 +358,10 @@ export default function TaskWorkspace({
     <>
       <header className="app-header">
         <div>
-          <h1>Caretaker Compliance Pro</h1>
+          <div className="dc-brand-row">
+            <img className="dc-app-logo" src="/dc-logo.svg" alt="Dakabin Crossing DC logo" />
+            <h1>Caretaker Compliance Pro</h1>
+          </div>
           <p>
             Maintenance scheduler for property manager / caretaker tasks, evidence folders,
             committee visibility, and quote vs invoice controls.
