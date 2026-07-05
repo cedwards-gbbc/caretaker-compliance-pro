@@ -42,13 +42,6 @@ function getPaymentStatus(task: AnyTask) {
 function needsCommitteeAction(task: AnyTask) {
   const pay = getPaymentStatus(task);
 
-  async function refresh(viewOverride?: "active" | "voided" | "all") {
-    const view = viewOverride ?? taskView;
-    const res = await fetch(`/api/tasks?view=${view}`);
-    const data = await res.json();
-    setTasks(data.tasks);
-  }
-
   async function voidTask(taskId: string) {
     const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
     if (!reason || !reason.trim()) return;
@@ -143,6 +136,15 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const [query, setQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
   const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
+
+  async function refresh(viewOverride?: "active" | "voided" | "all") {
+    const view = viewOverride ?? taskView;
+    const res = await fetch(`/api/tasks?view=${view}`);
+    const data = await res.json();
+    setTasks(data.tasks);
+  }
+
+
   const [activeTab, setActiveTab] = useState<"tasks" | "calendar">("calendar");
 
   const now = new Date();
@@ -204,13 +206,6 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
 
   const selectedDateTasks = tasksByDate.get(selectedDate) ?? [];
   const selectedDateFolder = selectedDateTasks.find((t) => t.dayDriveFolderUrl)?.dayDriveFolderUrl ?? "";
-
-  async function refresh(viewOverride?: "active" | "voided" | "all") {
-    const view = viewOverride ?? taskView;
-    const res = await fetch(`/api/tasks?view=${view}`);
-    const data = await res.json();
-    setTasks(data.tasks);
-  }
 
   async function createTask() {
     const schemeId = schemes[0]?.id;
