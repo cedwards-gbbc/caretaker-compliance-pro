@@ -98,6 +98,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const [query, setQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
   const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
+  const [activeTab, setActiveTab] = useState<"calendar" | "tasks">("calendar");
 
   async function reloadTasks(view: "active" | "voided" | "all" = taskView) {
     const res = await fetch(`/api/tasks?view=${view}`);
