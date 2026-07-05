@@ -39,7 +39,15 @@ function money(value: number | null | undefined) {
 
 function isoDate(value: string | null | undefined) {
   if (!value) return "";
-  return new Date(value).toISOString().slice(0, 10);
+  const date = new Date(value);
+  return localDateKey(date);
+}
+
+function localDateKey(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function getPaymentStatus(task: AnyTask) {
@@ -113,7 +121,7 @@ export default function TaskWorkspace({
 }) {
   const [tasks, setTasks] = useState<AnyTask[]>(initialTasks || []);
   const [selectedId, setSelectedId] = useState<string | null>(initialTasks?.[0]?.id ?? null);
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [selectedDate, setSelectedDate] = useState<string>(localDateKey(new Date()));
   const [query, setQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
   const [taskView, setTaskView] = useState<TaskView>("active");
@@ -200,7 +208,7 @@ export default function TaskWorkspace({
     const today = new Date();
     setCalendarYear(today.getFullYear());
     setCalendarMonth(today.getMonth());
-    setSelectedDate(today.toISOString().slice(0, 10));
+    setSelectedDate(localDateKey(today));
   }
 
   function prevMonth() {
@@ -385,7 +393,7 @@ export default function TaskWorkspace({
               ))}
 
               {calendarDays.map((day) => {
-                const key = day.toISOString().slice(0, 10);
+                const key = localDateKey(day);
                 const dayTasks = tasksByDate.get(key) ?? [];
                 const isCurrentMonth = day.getMonth() === calendarMonth;
                 const isSelected = key === selectedDate;
