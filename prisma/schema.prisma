@@ -153,6 +153,8 @@ model Task {
   startTime          String?
   endTime            String?
   contractorCompany  String?
+  assignedCompanyId   String?
+  assignedCompany     ContractorCompany? @relation(fields: [assignedCompanyId], references: [id])
   quoteRequired      Boolean    @default(false)
   committeeApprovalRequired Boolean @default(false)
   dayDriveFolderId   String?
@@ -352,5 +354,56 @@ model DefectAuditEvent {
   createdAt DateTime @default(now())
 
   @@index([defectId])
+}
+
+
+model ContractorCompany {
+  id              String   @id @default(cuid())
+
+  companyName     String   @unique
+  websiteUrl      String
+  logoUrl         String?
+  companyPhone    String
+  tradeType       String?
+  contactName     String?
+  email           String?
+  abn             String?
+  licenceExpiry   DateTime?
+  insuranceExpiry DateTime?
+  active          Boolean  @default(true)
+
+  tasks           Task[]
+  accessGrants    ContractorAccessGrant[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([companyName])
+  @@index([active])
+}
+
+
+model ContractorAccessGrant {
+  id            String   @id @default(cuid())
+  companyId     String
+  company       ContractorCompany @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  pinCode       String
+  accessToken   String   @unique
+  taskId        String?
+  taskCode      String?
+  accessScope   String   @default("TASK_ONLY")
+  expiresAt     DateTime
+  active        Boolean  @default(true)
+
+  createdBy     String?
+  lastUsedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([pinCode])
+  @@index([active])
+  @@index([expiresAt])
 }
 

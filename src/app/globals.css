@@ -1567,3 +1567,249 @@ h3 {
   }
 }
 
+
+/* Contractor-friendly secure mobile access */
+.contractor-shell {
+  min-height: 100vh;
+  padding: 18px;
+  background: #f5f7fb;
+  color: #101827;
+}
+
+.contractor-hero,
+.contractor-header,
+.contractor-login-card,
+.contractor-summary,
+.contractor-day,
+.contractor-empty {
+  border: 1px solid #dbe3ef;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
+}
+
+.contractor-hero {
+  padding: 18px;
+  margin-bottom: 14px;
+}
+
+.contractor-hero span,
+.contractor-header span,
+.contractor-selected-company span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.contractor-hero h1,
+.contractor-header h1 {
+  margin: 4px 0;
+  font-size: 24px;
+}
+
+.contractor-hero p {
+  margin: 8px 0 0;
+  color: #475569;
+  line-height: 1.45;
+}
+
+.contractor-company-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.contractor-company-card {
+  min-height: 132px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  color: #101827;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
+}
+
+.contractor-company-card strong {
+  font-size: 13px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.contractor-company-card span {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.contractor-logo,
+.contractor-logo-small {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #e0ecff;
+  color: #1d4ed8;
+  font-weight: 900;
+}
+
+.contractor-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+}
+
+.contractor-logo-small {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+}
+
+.contractor-logo img,
+.contractor-logo-small img {
+  max-width: 85%;
+  max-height: 85%;
+  object-fit: contain;
+}
+
+.contractor-login-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+}
+
+.contractor-selected-company {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contractor-selected-company strong {
+  font-size: 18px;
+}
+
+.contractor-login-card label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #334155;
+}
+
+.contractor-login-card input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  padding: 13px 14px;
+  font-size: 16px;
+  background: #f8fafc;
+  color: #101827;
+}
+
+.contractor-error {
+  border-radius: 14px;
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.contractor-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.contractor-header h1 {
+  font-size: 18px;
+}
+
+.contractor-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.contractor-summary strong {
+  font-size: 34px;
+  color: #2563eb;
+}
+
+.contractor-summary span {
+  color: #475569;
+  font-weight: 800;
+}
+
+.contractor-task-list {
+  display: grid;
+  gap: 12px;
+}
+
+.contractor-day {
+  padding: 14px;
+}
+
+.contractor-day h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.contractor-task-card {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #dbe3ef;
+  border-radius: 18px;
+  padding: 12px;
+  background: #f8fafc;
+}
+
+.contractor-task-card + .contractor-task-card {
+  margin-top: 10px;
+}
+
+.contractor-task-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.contractor-task-top strong {
+  color: #2563eb;
+}
+
+.contractor-task-top span {
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.contractor-task-card h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.contractor-task-card p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.contractor-empty {
+  padding: 18px;
+  color: #64748b;
+  font-weight: 800;
+}
+
