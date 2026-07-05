@@ -123,6 +123,23 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   }
 
 
+  const calendarDays = (() => {
+    const first = new Date(calendarYear, calendarMonth, 1);
+    const start = new Date(first);
+    start.setDate(first.getDate() - first.getDay());
+
+    const days: Date[] = [];
+    const cursor = new Date(start);
+
+    for (let i = 0; i < 42; i++) {
+      days.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return days;
+  })();
+
+
 
   const metrics = {
     total: tasks.length,
