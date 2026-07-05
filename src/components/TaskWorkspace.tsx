@@ -95,6 +95,7 @@ function buildCalendarDays(year: number, month: number) {
 export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks: AnyTask[]; schemes: Scheme[] }) {
   const [tasks, setTasks] = useState<AnyTask[]>(initialTasks);
   const [selectedId, setSelectedId] = useState<string | null>(initialTasks[0]?.id ?? null);
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [query, setQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
   const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
@@ -117,7 +118,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
     const res = await fetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schemeId, dueDate: selectedDate })
+      body: JSON.stringify({ schemeId })
     });
 
     if (!res.ok) {
