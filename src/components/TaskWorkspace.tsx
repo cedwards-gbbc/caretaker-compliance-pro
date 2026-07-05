@@ -41,6 +41,43 @@ function getPaymentStatus(task: AnyTask) {
 
 function needsCommitteeAction(task: AnyTask) {
   const pay = getPaymentStatus(task);
+  async function voidTask(taskId: string) {
+    const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
+    if (!reason || !reason.trim()) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/void`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to void task.");
+      return;
+    }
+
+    await refresh("active");
+    setTaskView("active");
+  }
+
+  async function restoreTask(taskId: string) {
+    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/restore`, {
+      method: "POST"
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to restore task.");
+      return;
+    }
+
+    await refresh("voided");
+    setTaskView("voided");
+  }
+
   return (
     task.committeeApprovalRequired ||
     task.followUpRequired ||
@@ -97,6 +134,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const [selectedId, setSelectedId] = useState<string | null>(initialTasks[0]?.id ?? null);
   const [query, setQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
+  const [taskView, setTaskView] = useState<"active" | "voided" | "all">("active");
   const [activeTab, setActiveTab] = useState<"tasks" | "calendar">("calendar");
 
   const now = new Date();
@@ -159,8 +197,9 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
   const selectedDateTasks = tasksByDate.get(selectedDate) ?? [];
   const selectedDateFolder = selectedDateTasks.find((t) => t.dayDriveFolderUrl)?.dayDriveFolderUrl ?? "";
 
-  async function refresh() {
-    const res = await fetch("/api/tasks");
+  async function refresh(viewOverride?: "active" | "voided" | "all") {
+    const view = viewOverride ?? taskView;
+    const res = await fetch(`/api/tasks?view=${view}`);
     const data = await res.json();
     setTasks(data.tasks);
   }
@@ -241,6 +280,43 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
     setSelectedDate(d.toISOString().slice(0, 10));
   }
 
+  async function voidTask(taskId: string) {
+    const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
+    if (!reason || !reason.trim()) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/void`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to void task.");
+      return;
+    }
+
+    await refresh("active");
+    setTaskView("active");
+  }
+
+  async function restoreTask(taskId: string) {
+    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/restore`, {
+      method: "POST"
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to restore task.");
+      return;
+    }
+
+    await refresh("voided");
+    setTaskView("voided");
+  }
+
   return (
     <>
       <header className="app-header">
@@ -251,7 +327,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
         <div className="header-actions">
           <button className="secondary" onClick={() => setActiveTab("calendar")}>Calendar</button>
           <button className="secondary" onClick={() => setActiveTab("tasks")}>Task Register</button>
-          <button className="secondary" onClick={refresh}>Refresh</button>
+          <button className="secondary" onClick={() => refresh()}>Refresh</button>
           <button onClick={createTask}>New Task</button>
         </div>
       </header>
@@ -368,6 +444,7 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                       <div className="day-task-title">
                         <strong>{task.taskCode} · {task.areaAsset}</strong>
                         <span className={`pill ${statusClass(pay)}`}>{pay}</span>
+                    {t.isDeleted && <span className="pill voided">VOIDED</span>}
                       </div>
                       <p>{task.category} · {task.responsibleParty ?? "Unassigned"}</p>
                       <p><strong>Company:</strong> {task.contractorCompany || fc?.quoteContractor || "Not set"}</p>
@@ -411,6 +488,22 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
               </select>
             </label>
 
+            <label className="field">
+              <span>Task View</span>
+              <select
+                value={taskView}
+                onChange={async (e) => {
+                  const nextView = e.target.value as "active" | "voided" | "all";
+                  setTaskView(nextView);
+                  await refresh(nextView);
+                }}
+              >
+                <option value="active">Active Schedule</option>
+                <option value="voided">Voided Tasks</option>
+                <option value="all">All Tasks</option>
+              </select>
+            </label>
+
             <div className="task-list">
               {filtered.map((t) => {
                 const fc = t.financialControl;
@@ -418,13 +511,14 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                 return (
                   <div
                     key={t.id}
-                    className={`task-card ${selected?.id === t.id ? "active" : ""} ${pay === "BLOCKED" ? "blocked" : pay === "WARNING" ? "warning" : ""}`}
+                    className={`task-card ${selected?.id === t.id ? "active" : ""} ${t.isDeleted ? "voided-card" : ""} ${pay === "BLOCKED" ? "blocked" : pay === "WARNING" ? "warning" : ""}`}
                     onClick={() => setSelectedId(t.id)}
                   >
                     <h4>{t.taskCode} · {t.areaAsset}</h4>
                     <p>{t.category} · {t.frequency} · {t.responsibleParty ?? "Unassigned"}</p>
                     <span className="pill">{taskStatusLabel(t.status)}</span>
                     <span className={`pill ${statusClass(pay)}`}>{pay}</span>
+                    {t.isDeleted && <span className="pill voided">VOIDED</span>}
                     <p>{fc?.paymentBlockReason ?? "No financial control assessment."}</p>
                   </div>
                 );
@@ -442,6 +536,8 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
                 onSave={saveTask}
                 onStampActioned={stampActioned}
                 onUploadFiles={uploadFiles}
+                onVoidTask={voidTask}
+                onRestoreTask={restoreTask}
               />
             )}
           </section>
@@ -456,16 +552,57 @@ function TaskDetail({
   schemes,
   onSave,
   onStampActioned,
-  onUploadFiles
+  onUploadFiles,
+  onVoidTask,
+  onRestoreTask
 }: {
   task: AnyTask;
   schemes: Scheme[];
   onSave: (formData: FormData) => void;
   onStampActioned: () => void;
   onUploadFiles: (formData: FormData) => void;
+  onVoidTask: (taskId: string) => void;
+  onRestoreTask: (taskId: string) => void;
 }) {
   const fc = task.financialControl ?? {};
   const pay = fc.paymentStatus ?? "PENDING";
+
+  async function voidTask(taskId: string) {
+    const reason = window.prompt("Void reason required. Example: Created by mistake / Duplicate / Wrong date");
+    if (!reason || !reason.trim()) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/void`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to void task.");
+      return;
+    }
+
+    await refresh("active");
+    setTaskView("active");
+  }
+
+  async function restoreTask(taskId: string) {
+    if (!window.confirm("Restore this voided task back to the active schedule?")) return;
+
+    const res = await fetch(`/api/tasks/${taskId}/restore`, {
+      method: "POST"
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to restore task.");
+      return;
+    }
+
+    await refresh("voided");
+    setTaskView("voided");
+  }
 
   return (
     <>
@@ -476,6 +613,11 @@ function TaskDetail({
         </div>
         <div className="row-actions">
           <button className="secondary" onClick={onStampActioned}>Stamp Actioned</button>
+          {task.isDeleted ? (
+            <button className="secondary" onClick={() => onRestoreTask(task.id)}>Restore Task</button>
+          ) : (
+            <button className="danger" onClick={() => onVoidTask(task.id)}>Void Task</button>
+          )}
         </div>
       </div>
 
@@ -485,6 +627,14 @@ function TaskDetail({
         <div><span>Evidence Files</span><strong>{task.documents?.length ?? 0}</strong></div>
         <div><span>Payment</span><strong>{pay}</strong></div>
       </section>
+
+      {task.isDeleted && (
+        <section className="voided-banner">
+          <strong>VOIDED TASK</strong>
+          <span>{task.deletedReason ?? "No reason recorded."}</span>
+          <span>{task.deletedAt ? `Voided ${new Date(task.deletedAt).toLocaleString()}` : ""}</span>
+        </section>
+      )}
 
       <form action={onSave}>
         <div className="grid two">

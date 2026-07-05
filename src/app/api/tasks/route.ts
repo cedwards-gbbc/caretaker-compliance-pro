@@ -4,8 +4,24 @@ import { nextTaskCode } from "@/lib/taskCode";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+function parseDueDate(value: unknown) {
+  const text = String(value ?? "");
+  return text ? new Date(`${text}T08:00:00.000Z`) : null;
+}
+
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const view = url.searchParams.get("view") ?? "active";
+
+  const where =
+    view === "voided"
+      ? { isDeleted: true }
+      : view === "all"
+        ? {}
+        : { isDeleted: false };
+
   const tasks = await prisma.task.findMany({
+    where,
     orderBy: { updatedAt: "desc" },
     include: {
       scheme: true,
@@ -27,7 +43,6 @@ export async function POST(req: Request) {
   if (!scheme) return NextResponse.json({ error: "Scheme not found." }, { status: 400 });
 
   const taskCode = await nextTaskCode();
-  const dueDate = body.dueDate ? new Date(`${body.dueDate}T08:00:00.000Z`) : null;
 
   const task = await prisma.task.create({
     data: {
@@ -39,9 +54,10 @@ export async function POST(req: Request) {
       responsibleParty: body.responsibleParty ?? "Caretaker",
       contractorCompany: body.contractorCompany ?? "",
       requirement: body.requirement ?? "Define the caretaker requirement.",
-      dueDate,
+      dueDate: parseDueDate(body.dueDate),
       startTime: body.startTime ?? "08:00",
       endTime: body.endTime ?? "08:30",
+      isDeleted: false,
       checklistItems: {
         create: [
           { text: "Requirement reviewed", sortOrder: 1 },

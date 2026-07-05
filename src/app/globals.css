@@ -774,3 +774,38 @@ h3 {
     padding: 14px;
   }
 }
+
+
+/* Void / soft-delete controls */
+
+.voided-card {
+  opacity: 0.72;
+  border-left-color: #64748b !important;
+  background: #f8fafc !important;
+}
+
+.pill.voided {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.voided-banner {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #cbd5e1;
+  border-left: 5px solid #64748b;
+  background: #f8fafc;
+  color: #334155;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+.voided-banner strong {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+.voided-banner span {
+  font-size: 13px;
+}

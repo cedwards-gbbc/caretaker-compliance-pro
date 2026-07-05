@@ -106,6 +106,10 @@ model Task {
   followUpDue        DateTime?
   followUpNotes      String?
   calendarEventId    String?
+  isDeleted          Boolean    @default(false)
+  deletedAt          DateTime?
+  deletedBy          String?
+  deletedReason      String?
   startTime          String?
   endTime            String?
   contractorCompany  String?
@@ -131,6 +135,7 @@ model Task {
 
   @@index([schemeId])
   @@index([status])
+  @@index([isDeleted])
   @@index([dueDate])
   @@index([category])
 }

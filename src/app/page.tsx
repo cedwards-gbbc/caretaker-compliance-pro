@@ -7,6 +7,7 @@ import TaskWorkspace from "@/components/TaskWorkspace";
 export default async function HomePage() {
   const [tasks, schemes] = await Promise.all([
     prisma.task.findMany({
+      where: { isDeleted: false },
       orderBy: { updatedAt: "desc" },
       include: {
         scheme: true,
