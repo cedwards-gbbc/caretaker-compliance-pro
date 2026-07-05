@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 type AnyTask = any;
 type Scheme = any;
 type TaskView = "active" | "voided" | "all";
-type ActiveTab = "calendar" | "tasks";
+type ActiveTab = "calendar" | "tasks" | "actions";
 
 const MONTHS = [
   "January",
@@ -174,6 +174,19 @@ export default function TaskWorkspace({
       return (!q || blob.includes(q)) && (!paymentFilter || fc?.paymentStatus === paymentFilter);
     });
   }, [tasks, query, paymentFilter]);
+
+  const actionTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      const paymentStatus = getPaymentStatus(task);
+      return (
+        isOverdue(task) ||
+        needsCommitteeAction(task) ||
+        isMissingEvidence(task) ||
+        paymentStatus === "BLOCKED" ||
+        paymentStatus === "WARNING"
+      );
+    });
+  }, [tasks]);
 
   const calendarDays = useMemo(
     () => buildCalendarDays(calendarYear, calendarMonth),
@@ -353,7 +366,7 @@ export default function TaskWorkspace({
         </div>
         <div className="header-actions">
           <button className="secondary" onClick={() => setActiveTab("calendar")}>Calendar</button>
-          <button className="secondary" onClick={() => setActiveTab("tasks")}>Task Register</button>
+          <button className="secondary" onClick={() => setActiveTab("tasks")}>Task Register</button>\n          <button className="secondary" onClick={() => setActiveTab("actions")}>Actions</button>
           <a className="button-link secondary-link" href="/defects">Defect Register</a>
           <button className="secondary" onClick={() => reloadTasks()}>Refresh</button>
           <button onClick={createTask}>New Task</button>
@@ -369,7 +382,60 @@ export default function TaskWorkspace({
         <div className="metric warning"><span>Evidence Missing</span><strong>{metrics.missingEvidence}</strong></div>
       </section>
 
-      {activeTab === "calendar" ? (
+      <section className="mobile-summary">
+        <div>
+          <span>Today / Action Summary</span>
+          <strong>{metrics.due} due - {metrics.action} action - {metrics.blocked} blocked</strong>
+        </div>
+        <button className="secondary" onClick={() => setActiveTab("actions")}>View Actions</button>
+      </section>
+
+      {activeTab === "actions" ? (
+        <main className="mobile-action-layout">
+          <section className="panel">
+            <div className="panel-title">
+              <div>
+                <h2>Action Required</h2>
+                <p className="muted">Overdue tasks, missing evidence, committee items and payment blockers.</p>
+              </div>
+              <span className="badge">{actionTasks.length}</span>
+            </div>
+
+            <div className="action-list">
+              {actionTasks.length === 0 ? (
+                <div className="empty-state">
+                  <strong>No action items</strong>
+                  <p>Nothing is overdue, blocked or missing evidence.</p>
+                </div>
+              ) : (
+                actionTasks.map((task) => {
+                  const paymentStatus = getPaymentStatus(task);
+                  return (
+                    <div key={task.id} className="action-card">
+                      <div className="action-card-head">
+                        <strong>{task.taskCode} - {task.areaAsset}</strong>
+                        <span className={`pill ${statusClass(paymentStatus)}`}>{paymentStatus}</span>
+                      </div>
+                      <p>{task.category} - {task.responsibleParty ?? "Unassigned"}</p>
+                      <div className="flag-row">
+                        {isOverdue(task) && <span className="flag danger">Overdue</span>}
+                        {needsCommitteeAction(task) && <span className="flag warning">Committee</span>}
+                        {isMissingEvidence(task) && <span className="flag warning">Evidence missing</span>}
+                        {paymentStatus === "BLOCKED" && <span className="flag danger">Payment blocked</span>}
+                      </div>
+                      <div className="row-actions">
+                        <button className="secondary" onClick={() => { setSelectedId(task.id); setActiveTab("tasks"); }}>Open</button>
+                        {task.dayDriveFolderUrl && <a className="button-link secondary-link" href={task.dayDriveFolderUrl} target="_blank" rel="noreferrer">Day Folder</a>}
+                        {task.taskDriveFolderUrl && <a className="button-link secondary-link" href={task.taskDriveFolderUrl} target="_blank" rel="noreferrer">Task Folder</a>}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </section>
+        </main>
+      ) : activeTab === "calendar" ? (
         <main className="calendar-layout">
           <section className="panel calendar-panel">
             <div className="calendar-toolbar">
@@ -582,6 +648,14 @@ export default function TaskWorkspace({
           </section>
         </main>
       )}
+      <button className="mobile-fab" onClick={createTask} aria-label="Create new task">+</button>
+
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+        <button className={activeTab === "calendar" ? "active" : ""} onClick={() => setActiveTab("calendar")}>Calendar</button>
+        <button className={activeTab === "tasks" ? "active" : ""} onClick={() => setActiveTab("tasks")}>Tasks</button>
+        <button className={activeTab === "actions" ? "active" : ""} onClick={() => setActiveTab("actions")}>Actions</button>
+        <a href="/defects">Defects</a>
+      </nav>
     </>
   );
 }

@@ -809,3 +809,299 @@ h3 {
 .voided-banner span {
   font-size: 13px;
 }
+
+
+/* Mobile UX upgrade: compact phone layout and bottom navigation */
+.mobile-summary,
+.mobile-bottom-nav,
+.mobile-fab {
+  display: none;
+}
+
+.action-list {
+  display: grid;
+  gap: 12px;
+}
+
+.action-card,
+.empty-state {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.action-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.flag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.flag {
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.flag.warning {
+  background: #fff3c4;
+  color: #92400e;
+}
+
+.flag.danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (max-width: 780px) {
+  body {
+    padding-bottom: 86px;
+  }
+
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 18px 18px 16px;
+    border-radius: 0 0 22px 22px;
+  }
+
+  .app-header h1 {
+    font-size: 28px;
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+
+  .app-header p,
+  .header-actions,
+  .dashboard {
+    display: none;
+  }
+
+  .mobile-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin: 14px 14px 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .mobile-summary span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .mobile-summary strong {
+    display: block;
+    font-size: 15px;
+  }
+
+  .calendar-layout,
+  .layout,
+  .mobile-action-layout {
+    display: block;
+    padding: 0 14px 18px;
+  }
+
+  .calendar-panel,
+  .day-panel,
+  .register-panel,
+  .panel {
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .calendar-toolbar {
+    display: grid;
+    gap: 12px;
+  }
+
+  .calendar-toolbar .inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .calendar-toolbar h2 {
+    width: 100%;
+    font-size: 24px;
+  }
+
+  .legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+    font-size: 12px;
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(7, minmax(42px, 1fr));
+    overflow-x: auto;
+    border-radius: 18px;
+  }
+
+  .calendar-day-name {
+    font-size: 11px;
+    padding: 10px 8px;
+  }
+
+  .calendar-cell {
+    min-height: 86px;
+    padding: 7px;
+  }
+
+  .calendar-cell-head strong {
+    font-size: 15px;
+  }
+
+  .calendar-item {
+    max-width: 100%;
+    padding: 6px 7px;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .day-panel {
+    position: relative;
+    top: auto;
+  }
+
+  .day-panel h2 {
+    font-size: 24px;
+  }
+
+  .row-actions {
+    gap: 8px;
+  }
+
+  .day-task-card,
+  .task-card,
+  .action-card {
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .day-task-title,
+  .action-card-head {
+    align-items: flex-start;
+  }
+
+  .day-task-title strong,
+  .action-card-head strong {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .grid.two,
+  .grid.three,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .record-banner {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .detail-head {
+    display: grid;
+    gap: 12px;
+  }
+
+  .detail-head h2 {
+    font-size: 22px;
+  }
+
+  .subsection {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea,
+  button,
+  .button-link {
+    min-height: 44px;
+  }
+
+  .table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .mobile-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    z-index: 50;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, .35);
+    overflow: hidden;
+  }
+
+  .mobile-bottom-nav button,
+  .mobile-bottom-nav a {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 13px 6px;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .mobile-bottom-nav button.active {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  .mobile-fab {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    right: 18px;
+    bottom: 78px;
+    z-index: 55;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: #2563eb;
+    color: white;
+    font-size: 32px;
+    font-weight: 900;
+    border: 0;
+    box-shadow: 0 18px 40px rgba(37, 99, 235, .35);
+  }
+}
+
