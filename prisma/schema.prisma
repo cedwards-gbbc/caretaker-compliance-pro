@@ -11,12 +11,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
-/*
-Production note:
-For PostgreSQL, change datasource provider to "postgresql" and use a Postgres DATABASE_URL.
-*/
-
 enum UserRole {
   ADMIN
   COMMITTEE
