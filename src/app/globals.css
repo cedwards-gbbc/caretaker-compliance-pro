@@ -1105,3 +1105,269 @@ h3 {
   }
 }
 
+
+/* Mobile cleanup: smaller typography, less visual noise, back nav on defects */
+.defect-mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 780px) {
+  body {
+    padding-bottom: 86px;
+  }
+
+  .app-header {
+    padding: 14px 16px 12px !important;
+    border-radius: 0 0 18px 18px !important;
+  }
+
+  .app-header h1 {
+    font-size: 22px !important;
+    line-height: 1.12 !important;
+    margin: 0 !important;
+  }
+
+  .app-header p,
+  .header-actions,
+  .dashboard {
+    display: none !important;
+  }
+
+  .mobile-summary {
+    margin: 10px 12px !important;
+    padding: 11px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .mobile-summary span {
+    font-size: 10px !important;
+  }
+
+  .mobile-summary strong {
+    font-size: 13px !important;
+  }
+
+  .calendar-layout,
+  .layout,
+  .mobile-action-layout {
+    display: block !important;
+    padding: 0 10px 14px !important;
+  }
+
+  .panel,
+  .calendar-panel,
+  .day-panel,
+  .register-panel {
+    padding: 12px !important;
+    border-radius: 16px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .calendar-toolbar {
+    gap: 8px !important;
+  }
+
+  .calendar-toolbar .inline {
+    gap: 7px !important;
+  }
+
+  .calendar-toolbar h2 {
+    width: 100% !important;
+    font-size: 18px !important;
+    margin: 2px 0 0 !important;
+  }
+
+  .calendar-toolbar button,
+  .mobile-summary button,
+  .row-actions button,
+  .button-link {
+    min-height: 36px !important;
+    padding: 8px 11px !important;
+    font-size: 12px !important;
+    border-radius: 10px !important;
+  }
+
+  .legend {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5px 8px !important;
+    font-size: 10px !important;
+  }
+
+  .calendar-grid {
+    grid-template-columns: repeat(7, minmax(38px, 1fr)) !important;
+    overflow-x: auto !important;
+    border-radius: 14px !important;
+  }
+
+  .calendar-day-name {
+    font-size: 9px !important;
+    padding: 7px 5px !important;
+  }
+
+  .calendar-cell {
+    min-height: 64px !important;
+    padding: 5px !important;
+  }
+
+  .calendar-cell-head strong {
+    font-size: 12px !important;
+  }
+
+  .calendar-item {
+    max-width: 100% !important;
+    padding: 4px 5px !important;
+    font-size: 9px !important;
+    border-radius: 9px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .day-panel {
+    position: relative !important;
+    top: auto !important;
+  }
+
+  .day-panel h2,
+  .panel-title h2,
+  .detail-head h2 {
+    font-size: 18px !important;
+    line-height: 1.2 !important;
+  }
+
+  .day-panel p,
+  .task-card p,
+  .day-task-card p,
+  .action-card p,
+  .muted {
+    font-size: 12px !important;
+  }
+
+  .day-task-card,
+  .task-card,
+  .action-card,
+  .empty-state {
+    padding: 11px !important;
+    border-radius: 14px !important;
+  }
+
+  .day-task-title strong,
+  .action-card-head strong,
+  .task-card h4 {
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  .pill,
+  .badge,
+  .flag {
+    font-size: 9px !important;
+    padding: 4px 7px !important;
+  }
+
+  .field span,
+  label span {
+    font-size: 10px !important;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 38px !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
+  }
+
+  .record-banner {
+    gap: 8px !important;
+  }
+
+  .record-banner div {
+    padding: 10px !important;
+    border-radius: 12px !important;
+  }
+
+  .record-banner span {
+    font-size: 9px !important;
+  }
+
+  .record-banner strong {
+    font-size: 13px !important;
+  }
+
+  .subsection {
+    padding: 11px !important;
+    border-radius: 14px !important;
+  }
+
+  .subsection h3 {
+    font-size: 15px !important;
+    margin-bottom: 9px !important;
+  }
+
+  .mobile-fab {
+    width: 48px !important;
+    height: 48px !important;
+    right: 14px !important;
+    bottom: 72px !important;
+    font-size: 26px !important;
+  }
+
+  .mobile-bottom-nav,
+  .defect-mobile-bottom-nav {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    z-index: 80 !important;
+    background: #0f172a !important;
+    border: 1px solid rgba(255, 255, 255, .14) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, .35) !important;
+    overflow: hidden !important;
+  }
+
+  .mobile-bottom-nav button,
+  .mobile-bottom-nav a,
+  .defect-mobile-bottom-nav a,
+  .defect-mobile-bottom-nav span {
+    appearance: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #cbd5e1 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    padding: 11px 4px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+  }
+
+  .mobile-bottom-nav button.active,
+  .defect-mobile-bottom-nav span.active {
+    background: #2563eb !important;
+    color: #fff !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .app-header h1 {
+    font-size: 20px !important;
+  }
+
+  .calendar-cell {
+    min-height: 58px !important;
+  }
+
+  .calendar-item {
+    font-size: 8.5px !important;
+  }
+
+  .day-panel h2,
+  .panel-title h2,
+  .detail-head h2 {
+    font-size: 17px !important;
+  }
+}
+

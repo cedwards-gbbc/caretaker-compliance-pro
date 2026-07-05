@@ -220,7 +220,7 @@ export default function DefectWorkspace({
           <p>Track reported defects, risk, evidence, committee approvals, linked tasks, and closure control.</p>
         </div>
         <div className="header-actions">
-          <a className="button-link secondary-link" href="/">Maintenance Scheduler</a>
+          <a className="button-link secondary-link" href="/">Back to Maintenance</a>
           <button className="secondary" onClick={() => reloadDefects(statusFilter)}>Refresh</button>
           <button onClick={createDefect}>New Defect</button>
         </div>
@@ -295,6 +295,12 @@ export default function DefectWorkspace({
           )}
         </section>
       </main>
+      <nav className="defect-mobile-bottom-nav" aria-label="Mobile defect navigation">
+        <a href="/">Calendar</a>
+        <a href="/">Tasks</a>
+        <span className="active">Defects</span>
+        <a href="/?view=actions">Actions</a>
+      </nav>
     </>
   );
 }
