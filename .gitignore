@@ -1,0 +1,8 @@
+node_modules
+.next
+.env
+.DS_Store
+public/uploads/*
+!public/uploads/.gitkeep
+prisma/dev.db
+prisma/dev.db-journal

@@ -1,0 +1,5 @@
+-- PostgreSQL deployment schema should be generated from prisma/schema.prisma.
+-- Run:
+-- npx prisma migrate dev
+--
+-- This project defaults to SQLite for local development and can be switched to PostgreSQL in prisma/schema.prisma.
