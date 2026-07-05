@@ -1502,3 +1502,68 @@ h3 {
   }
 }
 
+
+/* Calendar add button and selected date consolidation */
+.calendar-title-block {
+  display: grid;
+  gap: 2px;
+}
+
+.selected-date-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.calendar-add-button {
+  min-width: 42px;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  padding: 0;
+  font-size: 22px;
+  font-weight: 900;
+  display: inline-grid;
+  place-items: center;
+}
+
+@media (max-width: 780px) {
+  .calendar-toolbar .inline {
+    display: grid !important;
+    grid-template-columns: auto auto auto auto 1fr;
+    align-items: center;
+    gap: 7px !important;
+  }
+
+  .calendar-title-block {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+
+  .calendar-title-block h2 {
+    font-size: 18px !important;
+    margin: 0 !important;
+  }
+
+  .selected-date-label {
+    font-size: 11px !important;
+  }
+
+  .calendar-add-button {
+    min-width: 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 11px !important;
+    font-size: 21px !important;
+  }
+
+  .mobile-fab {
+    display: none !important;
+  }
+
+  .day-panel .row-actions {
+    margin-top: 4px;
+  }
+}
+

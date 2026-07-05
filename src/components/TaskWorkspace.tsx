@@ -450,7 +450,18 @@ export default function TaskWorkspace({
                 <button className="secondary" onClick={thisMonth}>Today</button>
                 <button className="secondary" onClick={prevMonth}>‹</button>
                 <button className="secondary" onClick={nextMonth}>›</button>
-                <h2>{MONTHS[calendarMonth]} {calendarYear}</h2>
+                <button className="calendar-add-button" onClick={createTask} title="Add task for selected date">+</button>
+                <div className="calendar-title-block">
+                  <h2>{MONTHS[calendarMonth]} {calendarYear}</h2>
+                  <p className="selected-date-label">
+                    Selected date: {new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric"
+                    })}
+                  </p>
+                </div>
               </div>
               <div className="legend">
                 <span className="legend-dot cal-scheduled"></span> Scheduled
@@ -521,15 +532,15 @@ export default function TaskWorkspace({
           <aside className="panel day-panel">
             <div className="panel-title">
               <div>
-                <h2>
+                <h2>Selected Date</h2>
+                <p className="muted">
                   {new Date(selectedDate + "T00:00:00").toLocaleDateString(undefined, {
                     weekday: "long",
                     day: "numeric",
                     month: "long",
                     year: "numeric"
-                  })}
-                </h2>
-                <p className="muted">{selectedDateTasks.length} task(s) due</p>
+                  })} · {selectedDateTasks.length} task(s) due
+                </p>
               </div>
             </div>
 
@@ -541,7 +552,6 @@ export default function TaskWorkspace({
               ) : (
                 <span className="muted">No day folder linked</span>
               )}
-              <button onClick={createTask}>Add Task</button>
             </div>
 
             <div className="day-task-list">
@@ -656,8 +666,6 @@ export default function TaskWorkspace({
           </section>
         </main>
       )}
-      <button className="mobile-fab" onClick={createTask} aria-label="Create new task">+</button>
-
       <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
         <button className={activeTab === "calendar" ? "active" : ""} onClick={() => setActiveTab("calendar")}>Calendar</button>
         <button className={activeTab === "tasks" ? "active" : ""} onClick={() => setActiveTab("tasks")}>Tasks</button>
