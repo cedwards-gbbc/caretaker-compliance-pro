@@ -105,6 +105,34 @@ export default function TaskWorkspace({ initialTasks, schemes }: { initialTasks:
     const data = await res.json();
     setTasks(data.tasks);
   }
+
+  async function createTask() {
+    const schemeId = schemes[0]?.id;
+
+    if (!schemeId) {
+      alert("Create or seed a scheme first.");
+      return;
+    }
+
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ schemeId, dueDate: selectedDate })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error ?? "Failed to create task.");
+      return;
+    }
+
+    const data = await res.json();
+    await reloadTasks("active");
+    setTaskView("active");
+    setSelectedId(data.task.id);
+    setActiveTab("tasks");
+  }
+
   return (
     <>
       <header className="app-header">
