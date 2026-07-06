@@ -383,6 +383,11 @@ export default function TaskWorkspace({
         <a href="/defects">Defects</a>
       </nav>
 
+      <section className="maintenance-quick-links">
+        <a href="/maintenance-calendar">Maintenance Checklist Calendar</a>
+        <a href="/task-register">Essential Task Register</a>
+      </section>
+
       <section className="dashboard">
         <div className="metric"><span>Total Tasks</span><strong>{metrics.total}</strong></div>
         <div className="metric"><span>Completed</span><strong>{metrics.completed}</strong></div>

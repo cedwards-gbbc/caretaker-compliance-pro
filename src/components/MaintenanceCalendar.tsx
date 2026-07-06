@@ -15,9 +15,21 @@ function buildMonth(year: number, month: number) {
   return Array.from({ length: 42 }, (_, i) => addDays(start, i));
 }
 
+function shortService(service: string) {
+  return service
+    .replace(" and records", "")
+    .replace(" and clean", "")
+    .replace(" maintenance", "")
+    .replace(" services", "")
+    .replace(" inspection", "")
+    .replace(" system service", "")
+    .replace("Building defects, repairs and maintenance", "Defects / repairs");
+}
+
 function datesFor(item: MaintenanceItem, start: Date) {
   const end = addMonths(start, 13);
   const out: Date[] = [];
+
   if (item.frequency === "AS_REQUIRED") return out;
 
   if (item.frequency === "DAILY") {
@@ -48,6 +60,12 @@ export default function MaintenanceCalendar() {
 
   const days = useMemo(() => buildMonth(year, month), [year, month]);
   const selected = scheduled.filter(x => x.date === selectedDate);
+  const monthAgenda = scheduled
+    .filter(x => {
+      const d = new Date(x.date + "T00:00:00");
+      return d.getFullYear() === year && d.getMonth() === month;
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   function move(n: number) {
     const d = new Date(year, month + n, 1);
@@ -60,7 +78,11 @@ export default function MaintenanceCalendar() {
       <header className="maintenance-header">
         <span>Dakabin Crossing</span>
         <h1>Maintenance Calendar</h1>
-        <p>Recurring maintenance works plotted from the caretaker maintenance checklist.</p>
+        <p>Recurring maintenance works are plotted below by frequency.</p>
+        <div className="maintenance-header-actions">
+          <a href="/">Main calendar</a>
+          <a href="/task-register">Task register</a>
+        </div>
       </header>
 
       <section className="maintenance-controls">
@@ -81,21 +103,34 @@ export default function MaintenanceCalendar() {
           return (
             <button key={dateKey} className={`maintenance-day ${day.getMonth() === month ? "" : "muted-day"} ${dateKey === selectedDate ? "selected" : ""}`} onClick={() => setSelectedDate(dateKey)}>
               <span>{day.getDate()}</span>
-              {items.slice(0, 3).map(x => <em key={`${x.item.code}-${dateKey}`}>{x.item.code}</em>)}
-              {items.length > 3 ? <small>+{items.length - 3}</small> : null}
+              {items.slice(0, 3).map(x => <em key={`${x.item.code}-${dateKey}`}>{shortService(x.item.service)}</em>)}
+              {items.length > 3 ? <small>+{items.length - 3} more</small> : null}
             </button>
           );
         })}
       </section>
 
       <section className="maintenance-selected">
-        <h2>Scheduled work</h2>
+        <h2>Selected date work</h2>
         {selected.length === 0 ? <p>No scheduled maintenance plotted for this date.</p> : selected.map(({ item }) => (
           <article key={item.code} className="maintenance-work-card">
             <span>{item.code}</span>
             <strong>{item.service}</strong>
             <p>{item.category} | {frequencyLabel(item.frequency)} | {item.responsibleParty.replace("_", " ")}</p>
             <ul>{item.checklist.map(line => <li key={line}>{line}</li>)}</ul>
+          </article>
+        ))}
+      </section>
+
+      <section className="maintenance-selected maintenance-agenda">
+        <h2>{MONTHS[month]} maintenance agenda</h2>
+        {monthAgenda.map(({ date, item }) => (
+          <article key={`${date}-${item.code}`} className="maintenance-agenda-row" onClick={() => setSelectedDate(date)}>
+            <div>
+              <span>{new Date(date + "T00:00:00").toLocaleDateString()}</span>
+              <strong>{item.service}</strong>
+              <p>{frequencyLabel(item.frequency)} | {item.responsibleParty.replace("_", " ")}</p>
+            </div>
           </article>
         ))}
       </section>
