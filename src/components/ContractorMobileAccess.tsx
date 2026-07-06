@@ -201,7 +201,7 @@ export default function ContractorMobileAccess() {
             </div>
 
             <div className="contractor-job-section">
-              <h3>Required work</h3>
+              <h3>Required work / checklist</h3>
               {taskRequirementLines(selectedTask).length === 0 ? (
                 <p>No task instructions have been added yet.</p>
               ) : (
@@ -215,7 +215,7 @@ export default function ContractorMobileAccess() {
 
             <div className="contractor-job-section">
               <h3>Evidence required</h3>
-              <p>Upload photos, notes, invoices or completion evidence against this job before marking it complete.</p>
+              <p>Upload photos, notes or completion evidence against this job before marking it complete.</p>
               {selectedTask.dayFolderUrl || selectedTask.evidenceFolderUrl ? (
                 <a className="contractor-link-button" href={selectedTask.dayFolderUrl || selectedTask.evidenceFolderUrl || "#"} target="_blank" rel="noreferrer">
                   Open evidence folder

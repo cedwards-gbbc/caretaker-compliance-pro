@@ -2165,3 +2165,303 @@ button.secondary,
   }
 }
 
+/* Essential register, GST automation and maintenance calendar */
+.gst-manual-field,
+.manual-gst-field {
+  display: none !important;
+}
+
+.essential-register-shell,
+.maintenance-shell {
+  min-height: 100vh;
+  padding: 16px;
+  background: #F4F1EA;
+  color: #1F2324;
+  font-family: "Arial Black", "Arial Narrow", Impact, Arial, Helvetica, sans-serif;
+}
+
+.essential-register-header,
+.maintenance-header,
+.essential-card,
+.maintenance-controls,
+.maintenance-calendar-grid,
+.maintenance-selected,
+.maintenance-work-card {
+  border: 1px solid #C9C7C1;
+  background: #FFFFFF;
+  color: #1F2324;
+}
+
+.essential-register-header,
+.maintenance-header {
+  padding: 18px;
+  margin-bottom: 12px;
+}
+
+.essential-register-header span,
+.maintenance-header span {
+  color:#5D7F45;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.essential-register-header h1,
+.maintenance-header h1 {
+  margin:4px 0;
+  color:#2F3437;
+}
+
+.essential-register-header p,
+.maintenance-header p {
+  margin:0;
+  color:#6f7475;
+}
+
+.essential-card {
+  display:grid;
+  gap:14px;
+  padding:14px;
+}
+
+.essential-card label {
+  display:grid;
+  gap:6px;
+  font-size:12px;
+  font-weight:900;
+  color:#2F3437;
+}
+
+.essential-card input,
+.essential-card select,
+.essential-card textarea {
+  width:100%;
+  border:1px solid #C9C7C1;
+  background:#F4F1EA;
+  color:#1F2324;
+  padding:11px 12px;
+  font:inherit;
+}
+
+.essential-grid {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:12px;
+}
+
+.template-summary,
+.gst-summary {
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:8px;
+}
+
+.template-summary {
+  grid-template-columns:1fr;
+  border-left:4px solid #5D7F45;
+  padding:10px;
+  background:#F4F1EA;
+}
+
+.gst-summary div {
+  border:1px solid #C9C7C1;
+  background:#F4F1EA;
+  padding:10px;
+}
+
+.gst-summary span {
+  display:block;
+  color:#6f7475;
+  font-size:11px;
+  text-transform:uppercase;
+}
+
+.gst-summary strong {
+  display:block;
+  color:#2F3437;
+  font-size:16px;
+}
+
+.checkbox-line {
+  display:flex !important;
+  align-items:center;
+  gap:8px !important;
+}
+
+.checkbox-line input {
+  width:auto !important;
+}
+
+.essential-actions {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.essential-actions a {
+  display:inline-grid;
+  place-items:center;
+  min-height:42px;
+  padding:10px 14px;
+  background:#2F3437;
+  color:#FFFFFF;
+  text-decoration:none;
+}
+
+.advanced-note {
+  margin-top:8px;
+  border:1px solid #C9C7C1;
+  padding:10px;
+  color:#6f7475;
+  background:#F4F1EA;
+}
+
+.maintenance-controls {
+  display:grid;
+  grid-template-columns:auto auto auto 1fr;
+  align-items:center;
+  gap:8px;
+  padding:12px;
+  margin-bottom:12px;
+}
+
+.maintenance-controls h2,
+.maintenance-controls p {
+  margin:0;
+}
+
+.maintenance-controls p {
+  color:#6f7475;
+  font-size:12px;
+}
+
+.maintenance-calendar-grid {
+  display:grid;
+  grid-template-columns:repeat(7, minmax(0, 1fr));
+  gap:1px;
+  background:#C9C7C1;
+  margin-bottom:12px;
+}
+
+.maintenance-calendar-grid > strong {
+  display:grid;
+  place-items:center;
+  min-height:32px;
+  background:#2F3437;
+  color:#FFFFFF;
+  font-size:11px;
+}
+
+.maintenance-day {
+  min-height:76px;
+  display:grid;
+  align-content:start;
+  gap:3px;
+  border:0 !important;
+  background:#FFFFFF !important;
+  color:#1F2324 !important;
+  padding:6px !important;
+  text-align:left;
+}
+
+.maintenance-day.selected {
+  outline:3px solid #5D7F45;
+  outline-offset:-3px;
+}
+
+.maintenance-day.muted-day {
+  opacity:.35;
+}
+
+.maintenance-day span {
+  font-size:12px;
+  color:#2F3437;
+}
+
+.maintenance-day em {
+  display:block;
+  width:100%;
+  background:#5D7F45;
+  color:#FFF;
+  font-style:normal;
+  font-size:9px;
+  padding:2px 3px;
+}
+
+.maintenance-day small {
+  color:#B46A4C;
+  font-size:10px;
+}
+
+.maintenance-selected {
+  padding:14px;
+}
+
+.maintenance-selected h2 {
+  margin:0 0 10px;
+}
+
+.maintenance-work-card {
+  display:grid;
+  gap:8px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.maintenance-work-card span {
+  color:#5D7F45;
+  font-size:11px;
+  text-transform:uppercase;
+}
+
+.maintenance-work-card strong {
+  color:#2F3437;
+  font-size:16px;
+}
+
+.maintenance-work-card p {
+  margin:0;
+  color:#6f7475;
+  font-size:12px;
+}
+
+.maintenance-work-card ul {
+  margin:0;
+  padding-left:18px;
+}
+
+@media (max-width: 780px) {
+  .essential-register-shell,
+  .maintenance-shell {
+    padding:0;
+  }
+
+  .essential-register-header,
+  .maintenance-header,
+  .essential-card,
+  .maintenance-controls,
+  .maintenance-calendar-grid,
+  .maintenance-selected {
+    border-left:0;
+    border-right:0;
+  }
+
+  .essential-grid,
+  .gst-summary {
+    grid-template-columns:1fr;
+  }
+
+  .maintenance-controls {
+    grid-template-columns:auto auto auto;
+  }
+
+  .maintenance-controls div {
+    grid-column:1 / -1;
+  }
+
+  .maintenance-day {
+    min-height:68px;
+    padding:5px !important;
+  }
+}
+
